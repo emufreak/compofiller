@@ -162,14 +162,14 @@ F00:0093       yOffset	dc.w	$8b
 F00:0094       	 	CNOP 0,4
 F00:0095       image_palette
 F00:0096       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupempty.COP"
-               S01:000000C8:  01 80 00 00 01 82 0F FF 01 84 00 F0 01 86 0F FE
-               S01:000000D8:  01 88 0F B1 01 8A 0F D8 01 8C 0F B0 01 8E 0F B1
+               S01:000000C8:  01 80 00 00 01 82 08 52 01 84 0C 73 01 86 0E B8
+               S01:000000D8:  01 88 0F DA 01 8A 0E DC 01 8C 0B A8 01 8E 0C 63
 F00:0097       	 	CNOP 0,4
 F00:0098       	 	CNOP 0,4
 F00:0099       image_palette_cycled
 F00:0100       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupemptycycle.COP"
-               S01:00000148:  01 80 00 00 01 82 0F FF 01 84 00 F0 01 86 0F FD
-               S01:00000158:  01 88 0F F3 01 8A 0F FA 01 8C 0F F2 01 8E 0F F3
+               S01:00000148:  01 80 00 00 01 82 0C 94 01 84 0F B5 01 86 0F EA
+               S01:00000158:  01 88 0F FC 01 8A 0F FE 01 8C 0F EA 01 8E 0C 63
 F00:0101       	 	CNOP 0,4
 F00:0102       screen	dc.l	0
                S01:000001C8:  00 00 00 00
@@ -4530,32 +4530,32 @@ F00:2357       	 	CNOP 0,4
 F00:2358       	 	CNOP 0,4
 F00:2359       imageRestoreCup
 F00:2360       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/restorecup.BPL"
-               S03:0001AA00:  FF E5 FF FF FF FF FF FF FF FF FE 3F FF E7 FF FF
-               S03:0001AA10:  FF FF FF FF FF FF FC 3F FF A7 FF FF FF FF FF FF
+               S03:0001AA00:  00 28 00 00 00 00 00 00 00 00 02 80 00 2C 00 00
+               S03:0001AA10:  00 00 00 00 00 00 03 40 00 38 00 00 00 00 00 00
 F00:2361       	 	CNOP 0,4
 F00:2362       	 	CNOP 0,4
 F00:2363       image1
 F00:2364       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupempty.BPL"
-               S03:0001CFF8:  FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
-               S03:0001D008:  FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+               S03:0001CFF8:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+               S03:0001D008:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 F00:2365       	 	CNOP 0,4
 F00:2366       	 	CNOP 0,4
 F00:2367       image2
 F00:2368       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupempty.BPL"
-               S03:00038708:  FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
-               S03:00038718:  FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF
+               S03:00038708:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+               S03:00038718:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 F00:2369       	 	CNOP 0,4
 F00:2370       	 	CNOP 0,4
 F00:2371       imageCupFull
 F00:2372       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupfull.BPL"
-               S03:00053E18:  FE 8E 07 E0 00 00 00 03 FF 87 FF 0F FE 97 80 FF
-               S03:00053E28:  FF FF FF FF 80 0F 81 0F FE 9B FF FA 00 00 BF FF
+               S03:00053E18:  00 5F E1 FC 00 00 00 3F FA 1F FF A0 00 3F F8 7F
+               S03:00053E28:  FF FF FF FF 00 7E 01 50 00 60 40 00 00 00 01 FF
 F00:2373       	 	CNOP 0,4
 F00:2374       	 	CNOP 0,4
 F00:2375       imageFoam
 F00:2376       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/foam.BPL"
-               S03:00055F24:  00 00 00 00 00 00 00 00 00 E8 00 00 00 00 00 00
-               S03:00055F34:  00 00 00 03 C0 24 C0 00 00 00 03 FE 00 00 00 33
+               S03:00055F24:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+               S03:00055F34:  00 00 00 00 00 2C 00 00 00 00 00 00 00 00 00 00
 F00:2377       	 	CNOP 0,4
 F00:2378       	 	CNOP 0,4
 F00:2379       imageMask
