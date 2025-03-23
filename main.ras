@@ -156,7 +156,7 @@ begin
 		move.l #$10a0028,a4
 		move.l #$ffdffffe,a3
 	");
-	//Poke16(#$dff180,0,$f00);	
+	
 	InitCustomCopperList();	
 	while row<=lightypos do 
 	begin
@@ -371,8 +371,12 @@ end;
 procedure EffBeerFill();
 begin
 	FillDrinkBeer(screen,yOffset, #imageCupFull,1692);
-	yOffset:=yOffset-1;
-	foamCounter:=foamCounter+1;
+	if(yOffset >= 1) then
+	begin
+		yOffset:=yOffset-1;
+		foamCounter:=foamCounter+1;
+	end;
+		
 	if(foamCounter <= 19) then 
 		BeerFoam(screen,foamCounter,216-foamCounter)
 	else 
@@ -381,10 +385,8 @@ end;
 
 procedure EffBeerDrink();
 begin
-	RemoveFoam(screen,yOffset);
-	//FillDrinkBeer(screen,yOffset,#imageRestoreCup,1920);
-	yOffset:=yOffset+1;
-	foamCounter:=foamCounter-1;
+	RemoveFoam(screen,yOffset);	
+
 	if(foamCounter <= 19) then 
 		BeerFoam(screen,foamCounter,216-foamCounter)
 	else 
@@ -401,7 +403,7 @@ begin
 	screenOffset := screenOffset + 40;	
 end;
 
-procedure RestoreCup(rc_dstimage:long);
+procedure RestoreCup(rc_srcimage,rc_dstimage:long,rc_yoffset:integer);
 begin
 //ablit description:	
 // - SrcImage 
@@ -416,25 +418,25 @@ begin
 // - BlitB + BlitCmod
 // - Channels and Minterm
 
-	srcimage := #imageCupFull; 
+	srcimage := rc_srcimage;
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,338,40,141<<6+6,0,28,0,$9f0);	
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);	
 	srcimage := srcimage+1692;
 	rc_dstimage := rc_dstimage+22480; 
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,338,40,141<<6+6,0,28,0,$9f0);		
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);		
 	srcimage := srcimage+1692;
 	rc_dstimage := rc_dstimage+22480;
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,338,40,141<<6+6,0,28,0,$9f0);		
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);		
 	srcimage := srcimage+1692;
 	rc_dstimage := rc_dstimage+22480;
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,338,40,141<<6+6,0,28,0,$9f0);		
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);		
 	srcimage := srcimage+1692;
 	rc_dstimage := rc_dstimage+22480;
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,338,40,141<<6+6,0,28,0,$9f0);		
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);		
 end;
 
 Procedure Get_Musicpos();
@@ -474,25 +476,10 @@ begin
 
 	while (isDone=0) do begin				
 
-		// Wait for vertical blank
-		//Poke16(#$dff180,0,$f00);
 		WaitVerticalBlank();	
 		colorcycled := 0;	
-		//Poke16(#$dff180,0,$000);	
-/*		Get_LeftMouseButton();
-		if(lButton <> lButtonLast)  then
-		begin			
-			if(lButton = 1) then
-			begin
-				if (istart<255) then
-					istart := istart + 1
-				else
-					istart := 0;
-			end;
-			lButtonLast := lButton;
-		end;*/
+
 		FlipBuffers();	
-		//ApplyCopperList();	
 		Get_Musicpos();
 		case (effectNumber) of
 			1: begin				
@@ -504,7 +491,7 @@ begin
 				CopperEffects();
 			   end;	
 			3: begin
-				if (yOffset > 1) then EffBeerFill();
+				EffBeerFill();
 				if (musicPos = $4) then effectNumber := 4;
 				CopperEffects();
 			   end;	   
@@ -517,7 +504,7 @@ begin
 				if ((musicPos = $8 or musicPos = $20) or musicPos = $38) then effectNumber := 6;
 				if( tmp < 2) then
 				begin
-					RestoreCup(screen);
+					RestoreCup(#imageCupFull,screen,338);
 					tmp2 := screen + 10240;
 					BeerFoam(tmp2,19,64);
 				end;
@@ -546,9 +533,16 @@ begin
 			   end;	
   			9: begin
 				if (foamCounter > 1) then
-					EffBeerDrink()
+				begin
+					EffBeerDrink();
+					foamCounter:=foamCounter-1;
+					yOffset:=yOffset+1;
+				end
 				else
+				begin
+					RestoreCup(#imageRestoreCup,screen,82);
 				   	if ((musicPos = $1c or musicPos = $30) or musicPos = $4) then effectNumber :=10;
+				end;
 				CopperEffects();
 			   end;   
 			10: begin 
