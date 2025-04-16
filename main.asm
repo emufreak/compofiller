@@ -178,6 +178,7 @@ sine4CopperAdd	dc.w $0, $0, $1, $1, $2, $3, $3, $4
 row	dc.w	$01
 tmp	dc.w	$01
 tmp2	dc.l	$00
+planeoffset	dc.l	$00
 	;*
 ; //	Sets up the copper list to point to a 320x256 buffer. Note that the screen will be set up 
 ; //	non-interlaced, with 40*256 bytes per bitplane. <p>
@@ -1743,6 +1744,7 @@ EffScrolldown
 rc_srcimage	dc.l	0
 rc_dstimage	dc.l	0
 rc_yoffset	dc.w	0
+rc_height	dc.l	0
 	 	CNOP 0,4
 block228
 RestoreCup
@@ -1760,6 +1762,25 @@ RestoreCup
 ; // - BlitB + BlitCmod
 ; // - Channels and Minterm
 	move.l rc_srcimage,srcimage ; Simple a:=b optimization 
+	moveq #0,d0
+	move.l rc_height,d0     ; BOP move
+	; ORG TYPE of rc_height LONG
+	; LHS is byte, so initiate advanced op
+	; is advanced bop
+	; Reset register
+	moveq #0,d1
+	move.w #$c,d1     ; Advanced movee
+	mulu.w d1,d0
+	; Store variable : planeoffset
+	move.l d0,planeoffset
+	moveq #0,d0
+	moveq #0,d1
+	move.l rc_height,d1     ; BOP move
+	lsl.l #$6,d1 ; simple bop
+	move.l d1,d0     ; BOP move
+	add.l #$6,d0 ; simple bop
+	; Store variable : bltsize
+	move.w d0,bltsize
 waitforblitter229
 	btst	#14,DMACONR
 	bne.s	waitforblitter229
@@ -1771,7 +1792,7 @@ waitforblitter229
 	move.w #$e,d1
 	move.w rc_yoffset,d2
 	move.w #$28,d3
-	move.w #$2346,d4
+	move.w bltsize,d4
 	move.w #$0,BLTAMOD(a6)
 	move.w #$0,BLTBMOD(a6)
 	move.w #$0,BLTCMOD(a6)
@@ -1779,7 +1800,11 @@ waitforblitter229
 	move.w #$9f0,d0
 	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
 	jsr blitter
-	add.l #$69c,srcimage ; Optimization: simple A := A op Const ADD SUB OR AND
+	moveq #0,d0
+	move.l planeoffset,d0     ; BOP move
+	add.l srcimage,d0 ; simple bop
+	; Store variable : srcimage
+	move.l d0,srcimage
 	add.l #$57d0,rc_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
 waitforblitter230
 	btst	#14,DMACONR
@@ -1792,7 +1817,7 @@ waitforblitter230
 	move.w #$e,d1
 	move.w rc_yoffset,d2
 	move.w #$28,d3
-	move.w #$2346,d4
+	move.w bltsize,d4
 	move.w #$0,BLTAMOD(a6)
 	move.w #$0,BLTBMOD(a6)
 	move.w #$0,BLTCMOD(a6)
@@ -1800,7 +1825,11 @@ waitforblitter230
 	move.w #$9f0,d0
 	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
 	jsr blitter
-	add.l #$69c,srcimage ; Optimization: simple A := A op Const ADD SUB OR AND
+	moveq #0,d0
+	move.l planeoffset,d0     ; BOP move
+	add.l srcimage,d0 ; simple bop
+	; Store variable : srcimage
+	move.l d0,srcimage
 	add.l #$57d0,rc_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
 waitforblitter231
 	btst	#14,DMACONR
@@ -1813,7 +1842,7 @@ waitforblitter231
 	move.w #$e,d1
 	move.w rc_yoffset,d2
 	move.w #$28,d3
-	move.w #$2346,d4
+	move.w bltsize,d4
 	move.w #$0,BLTAMOD(a6)
 	move.w #$0,BLTBMOD(a6)
 	move.w #$0,BLTCMOD(a6)
@@ -1821,7 +1850,11 @@ waitforblitter231
 	move.w #$9f0,d0
 	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
 	jsr blitter
-	add.l #$69c,srcimage ; Optimization: simple A := A op Const ADD SUB OR AND
+	moveq #0,d0
+	move.l planeoffset,d0     ; BOP move
+	add.l srcimage,d0 ; simple bop
+	; Store variable : srcimage
+	move.l d0,srcimage
 	add.l #$57d0,rc_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
 waitforblitter232
 	btst	#14,DMACONR
@@ -1834,7 +1867,7 @@ waitforblitter232
 	move.w #$e,d1
 	move.w rc_yoffset,d2
 	move.w #$28,d3
-	move.w #$2346,d4
+	move.w bltsize,d4
 	move.w #$0,BLTAMOD(a6)
 	move.w #$0,BLTBMOD(a6)
 	move.w #$0,BLTCMOD(a6)
@@ -1842,7 +1875,11 @@ waitforblitter232
 	move.w #$9f0,d0
 	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
 	jsr blitter
-	add.l #$69c,srcimage ; Optimization: simple A := A op Const ADD SUB OR AND
+	moveq #0,d0
+	move.l planeoffset,d0     ; BOP move
+	add.l srcimage,d0 ; simple bop
+	; Store variable : srcimage
+	move.l d0,srcimage
 	add.l #$57d0,rc_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
 waitforblitter233
 	btst	#14,DMACONR
@@ -1855,7 +1892,7 @@ waitforblitter233
 	move.w #$e,d1
 	move.w rc_yoffset,d2
 	move.w #$28,d3
-	move.w #$2346,d4
+	move.w bltsize,d4
 	move.w #$0,BLTAMOD(a6)
 	move.w #$0,BLTBMOD(a6)
 	move.w #$0,BLTCMOD(a6)
@@ -1979,6 +2016,9 @@ ctb413: ;Main true block ;keep
 	move.l #imageCupFull,rc_srcimage ; Simple a:=b optimization 
 	move.l screen,rc_dstimage ; Simple a:=b optimization 
 	move.w #$152,rc_yoffset ; Simple a:=b optimization 
+	moveq #0,d0
+	move.w #$8d,d0
+	move.l d0,rc_height
 	jsr RestoreCup
 	moveq #0,d0
 	move.l screen,d0     ; BOP move
@@ -2071,7 +2111,10 @@ ctb459: ;Main true block ;keep
 eblock460
 	move.l #imageRestoreCup,rc_srcimage ; Simple a:=b optimization 
 	move.l screen,rc_dstimage ; Simple a:=b optimization 
-	move.w #$52,rc_yoffset ; Simple a:=b optimization 
+	move.w #$3d,rc_yoffset ; Simple a:=b optimization 
+	moveq #0,d0
+	move.w #$a2,d0
+	move.l d0,rc_height
 	jsr RestoreCup
 	cmp.w #$1c,musicPos
 	bne localfailed480

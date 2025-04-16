@@ -31,6 +31,7 @@ var
     sine4CopperAdd : array[256] of integer = buildtable("(Math.sin(i/128*2*3.14)*0.102)*128");	
 	row, tmp : integer = 1;
 	tmp2 : long = 0;
+	planeoffset : long = 0;
 	
 procedure CookieCut(cc_src:long,cc_dst:long,cc_mask:long,cc_size:integer);
 begin
@@ -403,7 +404,7 @@ begin
 	screenOffset := screenOffset + 40;	
 end;
 
-procedure RestoreCup(rc_srcimage,rc_dstimage:long,rc_yoffset:integer);
+procedure RestoreCup(rc_srcimage,rc_dstimage:long,rc_yoffset:integer,rc_height:long);
 begin
 //ablit description:	
 // - SrcImage 
@@ -419,24 +420,26 @@ begin
 // - Channels and Minterm
 
 	srcimage := rc_srcimage;
+	planeoffset := 12*rc_height;
+	bltsize := (rc_height << 6) + 6;
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);	
-	srcimage := srcimage+1692;
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,bltsize,0,28,0,$9f0);	
+	srcimage := srcimage+planeoffset;
 	rc_dstimage := rc_dstimage+22480; 
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);		
-	srcimage := srcimage+1692;
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,bltsize,0,28,0,$9f0);		
+	srcimage := srcimage+planeoffset;
 	rc_dstimage := rc_dstimage+22480;
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);		
-	srcimage := srcimage+1692;
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,bltsize,0,28,0,$9f0);		
+	srcimage := srcimage+planeoffset;
 	rc_dstimage := rc_dstimage+22480;
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);		
-	srcimage := srcimage+1692;
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,bltsize,0,28,0,$9f0);		
+	srcimage := srcimage+planeoffset;
 	rc_dstimage := rc_dstimage+22480;
 	WaitForBlitter();
-	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,141<<6+6,0,28,0,$9f0);		
+	ablit(srcimage, rc_dstimage,0,14,rc_yoffset,40,bltsize,0,28,0,$9f0);		
 end;
 
 Procedure Get_Musicpos();
@@ -504,7 +507,7 @@ begin
 				if ((musicPos = $8 or musicPos = $20) or musicPos = $38) then effectNumber := 6;
 				if( tmp < 2) then
 				begin
-					RestoreCup(#imageCupFull,screen,338);
+					RestoreCup(#imageCupFull,screen,338,141);
 					tmp2 := screen + 10240;
 					BeerFoam(tmp2,19,64);
 				end;
@@ -540,7 +543,7 @@ begin
 				end
 				else
 				begin
-					RestoreCup(#imageRestoreCup,screen,82);
+					RestoreCup(#imageRestoreCup,screen,61,162);
 				   	if ((musicPos = $1c or musicPos = $30) or musicPos = $4) then effectNumber :=10;
 				end;
 				CopperEffects();
