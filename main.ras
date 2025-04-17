@@ -1,7 +1,9 @@
 program Compofiller;
 @use "graphics"
 @include "lsplayer_cia.inc"
+@include "c2p.inc"
 var  
+	c2p1x1_5_c5_030_tempbuf : array[320*512/4] of byte;
 	music: incbin("resources/music/terra-mesta4.lsmusic") chipmem;
 	bank: incbin("resources/music/terra-mesta4.lsbank") chipmem;
    	curBuf, isDone, foamDone,colorcycled: integer = 0; 
@@ -9,10 +11,13 @@ var
    	lightypos: integer = $3001;
    	screenOffset:long = 10240;
 	foamCounter,mousereg,eff0Counter: integer = 0; 
-   	yOffset: integer = 139;
+   	yOffset: integer = 139;   	
  	imageRestoreCup : incbin("resources/images/restorecup.BPL") chipmem;
-   	image1 : incbin("resources/images/cupempty.BPL") chipmem;
- 	image2 : incbin("resources/images/cupempty.BPL") chipmem;
+ 	imagechunky : incbin("resources/images/cupempty.CHK");
+ 	image1 : incbin("resources/images/cupempty.BPL");
+ 	image2 : incbin("resources/images/cupempty.BPL");
+   	//image1 : array[40*512*5] of byte chipmem;
+ 	//image2 : array[40*512*5] of byte chipmem;
 	imageCupFull: incbin("resources/images/cupfull.BPL") chipmem; 	
 	imageFoam: incbin("resources/images/foam.BPL") chipmem; 		
 	imageMask: incbin("resources/images/mask.BPL") chipmem; 			
@@ -473,6 +478,9 @@ end;
 begin	
 	curcopperpos := 0;
 	LSP_CIAStart(#music,#bank,0,0);
+	Load_c2p();
+	//init_c2p();
+
 	Graphics::SetupNonInterlacedScreen(#image1,5);
 	FlipBuffers();
 	memcpy(#image_palette,0,#copper_palette,0,31,4);
