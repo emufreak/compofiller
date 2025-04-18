@@ -14,8 +14,8 @@ var
    	yOffset: integer = 139;   	
  	imageRestoreCup : incbin("resources/images/restorecup.BPL") chipmem;
  	imagechunky : incbin("resources/images/cupempty.CHK");
- 	image1 : incbin("resources/images/cupempty.BPL");
- 	image2 : incbin("resources/images/cupempty.BPL");
+ 	image1 : incbin("resources/images/cupempty.BPL") chipmem;
+ 	image2 : incbin("resources/images/cupempty.BPL") chipmem;
    	//image1 : array[40*512*5] of byte chipmem;
  	//image2 : array[40*512*5] of byte chipmem;
 	imageCupFull: incbin("resources/images/cupfull.BPL") chipmem; 	
@@ -126,7 +126,6 @@ procedure ColorCycle();
 begin
 	colorcycled := 1;
 	asm("
-	move.w  #1,$100
 	move.l	a5,curcopperpos
 	");
 	memcpy(#image_palette_cycled,0,curcopperpos,0,31,4);
@@ -478,8 +477,8 @@ end;
 begin	
 	curcopperpos := 0;
 	LSP_CIAStart(#music,#bank,0,0);
-	Load_c2p();
-	//init_c2p();
+	Load_c2p();	
+    c2p_convert(#imagechunky, #image1);
 
 	Graphics::SetupNonInterlacedScreen(#image1,5);
 	FlipBuffers();
