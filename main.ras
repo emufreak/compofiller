@@ -9,10 +9,12 @@ var
    	lightypos: integer = $3001;
    	screenOffset:long = 10240;
 	foamCounter,mousereg,eff0Counter: integer = 0; 
-   	yOffset: integer = 139;
+   	yOffset: integer = 139;   	
  	imageRestoreCup : incbin("resources/images/restorecup.BPL") chipmem;
-   	image1 : incbin("resources/images/cupempty.BPL") chipmem;
+ 	image1 : incbin("resources/images/cupempty.BPL") chipmem;
  	image2 : incbin("resources/images/cupempty.BPL") chipmem;
+   	//image1 : array[40*512*5] of byte chipmem;
+ 	//image2 : array[40*512*5] of byte chipmem;
 	imageCupFull: incbin("resources/images/cupfull.BPL") chipmem; 	
 	imageFoam: incbin("resources/images/foam.BPL") chipmem; 		
 	imageMask: incbin("resources/images/mask.BPL") chipmem; 			
@@ -24,7 +26,7 @@ var
 	beerinput: integer = 0;
 	curbplmod: integer = $ffd8;
 	istart: integer = 130;
-	musicPosold: integer = 99;
+	musicPosOld: integer = 99;
 	effectNumber: integer = 1;
 	imagemask,blttarget,srcimage,bltapt,bltbpt:long;	
 	sine4Copper : array[256] of integer = buildtable("386+(Math.sin(i/128*2*3.14)*1.02)*128");
@@ -32,6 +34,7 @@ var
 	row, tmp : integer = 1;
 	tmp2 : long = 0;
 	planeoffset : long = 0;
+	frameCounter: integer = 0;
 	
 procedure CookieCut(cc_src:long,cc_dst:long,cc_mask:long,cc_size:integer);
 begin
@@ -121,7 +124,6 @@ procedure ColorCycle();
 begin
 	colorcycled := 1;
 	asm("
-	move.w  #1,$100
 	move.l	a5,curcopperpos
 	");
 	memcpy(#image_palette_cycled,0,curcopperpos,0,31,4);
@@ -473,6 +475,7 @@ end;
 begin	
 	curcopperpos := 0;
 	LSP_CIAStart(#music,#bank,0,0);
+
 	Graphics::SetupNonInterlacedScreen(#image1,5);
 	FlipBuffers();
 	memcpy(#image_palette,0,#copper_palette,0,31,4);
@@ -504,7 +507,7 @@ begin
 				tmp := 0;
 			   end;
 			5: begin
-				if ((musicPos = $8 or musicPos = $20) or musicPos = $38) then effectNumber := 6;
+				if ((musicPos = $8 or musicPos = 35) or (musicPos = 56 or musicPos = 83)) then effectNumber := 6;
 				if( tmp < 2) then
 				begin
 					RestoreCup(#imageCupFull,screen,338,141);
@@ -520,7 +523,7 @@ begin
 					lightypos := lightypos + $100
 				else
 					lightypos := $3001;
-			   	if ((musicPos = $10 or musicPos = $28) or musicPos = $40) then effectNumber :=7;
+			   	if ((musicPos = 16 or musicPos = 40) or (musicPos = 64 or musicPos = 88)) then effectNumber :=7;
 			   end;
 			7: begin
 				CopperEffects();
@@ -528,26 +531,71 @@ begin
 			   	else
 			   	begin 
 					effectNumber := 8;
+					frameCounter := 0;
 			   	end;			   
 			   end;	
 			8: begin
-			   	if ((musicPos = $18 or musicPos = $2c) or musicPos = 0 ) then effectNumber :=9;			   
-			   	CopperEffects();			   									
+			   	if ((musicPos = 24 or musicPos = 44) or (musicPos = 72 or musicPos = 100) ) then 
+				begin	
+					effectNumber :=9;	
+					musicPosOld := musicPos;
+				end;	   			 
+				if( musicPos = 100) then
+				begin
+					effectNumber :=91;	
+					musicPosOld := musicPos;
+				end;  
+			   	CopperEffects();		
+								
 			   end;	
   			9: begin
+	  			if (musicPos > musicPosOld) then
+	  			begin
+		  			musicPosOld := musicPos;
+		  			frameCounter := 0;
+	  			end;
+  			
 				if (foamCounter > 1) then
 				begin
+					frameCounter := frameCounter + 1;
+					if ((frameCounter > 24 and frameCounter < 35) or (frameCounter > 88 and frameCounter < 99) ) then
+					begin
+						foamCounter:=foamCounter-1;
+						yOffset:=yOffset+1;
+					end;
 					EffBeerDrink();
-					foamCounter:=foamCounter-1;
-					yOffset:=yOffset+1;
 				end
 				else
 				begin
 					RestoreCup(#imageRestoreCup,screen,61,162);
-				   	if ((musicPos = $1c or musicPos = $30) or musicPos = $4) then effectNumber :=10;
+				   	if ((musicPos = 32 or musicPos = 52) or ((musicPos = 4 or musicPos = 80) or musicPos = 108)) then effectNumber :=10;
 				end;
 				CopperEffects();
-			   end;   
+			   end;  
+             91: begin
+				  if (musicPos > musicPosOld) then
+	  			  begin
+		  		  	  musicPosOld := musicPos;
+		  			  frameCounter := 0;
+	  			  end;
+  			
+				  if (foamCounter > 1) then
+				  begin
+					  frameCounter := frameCounter + 1;
+					  if (frameCounter > 24 and frameCounter < 46) then
+					  begin
+						foamCounter:=foamCounter-1;
+						yOffset:=yOffset+1;
+					  end;
+					  EffBeerDrink();
+				  end
+				  else
+				  begin
+					RestoreCup(#imageRestoreCup,screen,61,162);
+				   	if ((musicPos = 32 or musicPos = 52) or ((musicPos = 4 or musicPos = 80) or musicPos = 108)) then effectNumber :=10;
+				  end;
+				  CopperEffects();	               
+                 end;
 			10: begin 
 				beerinput := beerinput + 1;						
 				DistortMore();

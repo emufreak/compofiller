@@ -108,6 +108,7 @@ current	dc.w	$00
 beerinput	dc.w	$00
 curbplmod	dc.w	$ffd8
 istart	dc.w	$82
+musicPosOld	dc.w	$63
 effectNumber	dc.w	$01
 imagemask	dc.l	0
 srcimage	dc.l	0
@@ -179,6 +180,7 @@ row	dc.w	$01
 tmp	dc.w	$01
 tmp2	dc.l	$00
 planeoffset	dc.l	$00
+frameCounter	dc.w	$00
 	;*
 ; //	Sets up the copper list to point to a 320x256 buffer. Note that the screen will be set up 
 ; //	non-interlaced, with 40*256 bytes per bitplane. <p>
@@ -837,7 +839,6 @@ c_edblock136
 	;    Procedure type : User-defined procedure
 ColorCycle
 	move.w #$1,colorcycled ; Simple a:=b optimization 
-	move.w  #1,$100
 	move.l	a5,curcopperpos
 	
 	move.w #$1f,d0
@@ -1932,87 +1933,92 @@ loopstart240
 	cmp.w #$0,isDone
 	bne edblock239
 ctb237: ;Main true block ;keep 
-waitVB364
+waitVB451
 	move.l VPOSR,d0
 	and.l #$1ff00,d0
 	cmp.l #300<<8,d0
-	bne waitVB364
+	bne waitVB451
 	move.w #$0,colorcycled ; Simple a:=b optimization 
 	jsr FlipBuffers
 	jsr Get_Musicpos
 	move #$1,d0
 	cmp.w effectNumber,d0
-	bne casenext366
+	bne casenext453
 	add.w #$1,eff0Counter ; Optimization: simple A := A op Const ADD SUB OR AND
 	cmp.w #$1e,eff0Counter
-	blo edblock371
-ctb369: ;Main true block ;keep 
+	blo edblock458
+ctb456: ;Main true block ;keep 
 	move.w #$2,effectNumber ; Simple a:=b optimization 
-edblock371
-	jmp caseend365
-casenext366
+edblock458
+	jmp caseend452
+casenext453
 	move #$2,d0
 	cmp.w effectNumber,d0
-	bne casenext374
+	bne casenext461
 	cmp.w #$c,foamCounter
-	bhi eblock378
-ctb377: ;Main true block ;keep 
+	bhi eblock465
+ctb464: ;Main true block ;keep 
 	jsr EffBeerFoam
-	jmp edblock379
-eblock378
+	jmp edblock466
+eblock465
 	move.w #$3,effectNumber ; Simple a:=b optimization 
-edblock379
+edblock466
 	jsr CopperEffects
-	jmp caseend365
-casenext374
+	jmp caseend452
+casenext461
 	move #$3,d0
 	cmp.w effectNumber,d0
-	bne casenext384
+	bne casenext471
 	jsr EffBeerFill
 	cmp.w #$4,musicPos
-	bne edblock389
-ctb387: ;Main true block ;keep 
+	bne edblock476
+ctb474: ;Main true block ;keep 
 	move.w #$4,effectNumber ; Simple a:=b optimization 
-edblock389
+edblock476
 	jsr CopperEffects
-	jmp caseend365
-casenext384
+	jmp caseend452
+casenext471
 	move #$4,d0
 	cmp.w effectNumber,d0
-	bne casenext392
+	bne casenext479
 	cmp.l #$0,screenOffset
-	bls eblock396
-ctb395: ;Main true block ;keep 
+	bls eblock483
+ctb482: ;Main true block ;keep 
 	jsr EffScrollup
-	jmp edblock397
-eblock396
+	jmp edblock484
+eblock483
 	move.w #$5,effectNumber ; Simple a:=b optimization 
-edblock397
+edblock484
 	jsr CopperEffects
 	move.w #$0,tmp ; Simple a:=b optimization 
-	jmp caseend365
-casenext392
+	jmp caseend452
+casenext479
 	move #$5,d0
 	cmp.w effectNumber,d0
-	bne casenext402
+	bne casenext489
 	cmp.w #$8,musicPos
-	bne localfailed410
-	jmp ctb405
-localfailed410: ;keep
+	bne localfailed497
+	jmp ctb492
+localfailed497: ;keep
 	; ; logical OR, second chance
-	cmp.w #$20,musicPos
-	bne localfailed409
-	jmp ctb405
-localfailed409: ;keep
+	cmp.w #$23,musicPos
+	bne localfailed496
+	jmp ctb492
+localfailed496: ;keep
 	; ; logical OR, second chance
 	cmp.w #$38,musicPos
-	bne edblock407
-ctb405: ;Main true block ;keep 
+	bne localfailed498
+	jmp ctb492
+localfailed498: ;keep
+	; ; logical OR, second chance
+	cmp.w #$53,musicPos
+	bne edblock494
+ctb492: ;Main true block ;keep 
 	move.w #$6,effectNumber ; Simple a:=b optimization 
-edblock407
+edblock494
 	cmp.w #$2,tmp
-	bhs edblock415
-ctb413: ;Main true block ;keep 
+	bhs edblock503
+ctb501: ;Main true block ;keep 
 	move.l #imageCupFull,rc_srcimage ; Simple a:=b optimization 
 	move.l screen,rc_dstimage ; Simple a:=b optimization 
 	move.w #$152,rc_yoffset ; Simple a:=b optimization 
@@ -2029,86 +2035,130 @@ ctb413: ;Main true block ;keep
 	move.w #$13,foamsize ; Simple a:=b optimization 
 	move.w #$40,foampos ; Simple a:=b optimization 
 	jsr BeerFoam
-edblock415
+edblock503
 	add.w #$1,tmp ; Optimization: simple A := A op Const ADD SUB OR AND
 	jsr CopperEffects
-	jmp caseend365
-casenext402
+	jmp caseend452
+casenext489
 	move #$6,d0
 	cmp.w effectNumber,d0
-	bne casenext418
+	bne casenext506
 	jsr CopperEffects
 	cmp.w #$8901,lightypos
-	bhi eblock422
-ctb421: ;Main true block ;keep 
+	bhi eblock510
+ctb509: ;Main true block ;keep 
 	add.w #$100,lightypos ; Optimization: simple A := A op Const ADD SUB OR AND
-	jmp edblock423
-eblock422
+	jmp edblock511
+eblock510
 	move.w #$3001,lightypos ; Simple a:=b optimization 
-edblock423
+edblock511
 	cmp.w #$10,musicPos
-	bne localfailed434
-	jmp ctb429
-localfailed434: ;keep
+	bne localfailed522
+	jmp ctb517
+localfailed522: ;keep
 	; ; logical OR, second chance
 	cmp.w #$28,musicPos
-	bne localfailed433
-	jmp ctb429
-localfailed433: ;keep
+	bne localfailed521
+	jmp ctb517
+localfailed521: ;keep
 	; ; logical OR, second chance
 	cmp.w #$40,musicPos
-	bne edblock431
-ctb429: ;Main true block ;keep 
+	bne localfailed523
+	jmp ctb517
+localfailed523: ;keep
+	; ; logical OR, second chance
+	cmp.w #$58,musicPos
+	bne edblock519
+ctb517: ;Main true block ;keep 
 	move.w #$7,effectNumber ; Simple a:=b optimization 
-edblock431
-	jmp caseend365
-casenext418
+edblock519
+	jmp caseend452
+casenext506
 	move #$7,d0
 	cmp.w effectNumber,d0
-	bne casenext436
+	bne casenext525
 	jsr CopperEffects
 	cmp.l #$2800,screenOffset
-	bhs eblock440
-ctb439: ;Main true block ;keep 
+	bhs eblock529
+ctb528: ;Main true block ;keep 
 	jsr EffScrolldown
-	jmp edblock441
-eblock440
+	jmp edblock530
+eblock529
 	move.w #$8,effectNumber ; Simple a:=b optimization 
-edblock441
-	jmp caseend365
-casenext436
+	move.w #$0,frameCounter ; Simple a:=b optimization 
+edblock530
+	jmp caseend452
+casenext525
 	move #$8,d0
 	cmp.w effectNumber,d0
-	bne casenext446
+	bne casenext535
 	cmp.w #$18,musicPos
-	bne localfailed454
-	jmp ctb449
-localfailed454: ;keep
+	bne localfailed543
+	jmp ctb538
+localfailed543: ;keep
 	; ; logical OR, second chance
 	cmp.w #$2c,musicPos
-	bne localfailed453
-	jmp ctb449
-localfailed453: ;keep
+	bne localfailed542
+	jmp ctb538
+localfailed542: ;keep
 	; ; logical OR, second chance
-	cmp.w #$0,musicPos
-	bne edblock451
-ctb449: ;Main true block ;keep 
+	cmp.w #$48,musicPos
+	bne localfailed544
+	jmp ctb538
+localfailed544: ;keep
+	; ; logical OR, second chance
+	cmp.w #$64,musicPos
+	bne edblock540
+ctb538: ;Main true block ;keep 
 	move.w #$9,effectNumber ; Simple a:=b optimization 
-edblock451
+	move.w musicPos,musicPosOld ; Simple a:=b optimization 
+edblock540
+	cmp.w #$64,musicPos
+	bne edblock549
+ctb547: ;Main true block ;keep 
+	move.w #$5b,effectNumber ; Simple a:=b optimization 
+	move.w musicPos,musicPosOld ; Simple a:=b optimization 
+edblock549
 	jsr CopperEffects
-	jmp caseend365
-casenext446
+	jmp caseend452
+casenext535
 	move #$9,d0
 	cmp.w effectNumber,d0
-	bne casenext456
+	bne casenext552
+	move.w musicPosOld,d1          ; Loadvar regular end
+	move.w musicPos,d0
+	cmp.w d1,d0
+	bls edblock557
+ctb555: ;Main true block ;keep 
+	move.w musicPos,musicPosOld ; Simple a:=b optimization 
+	move.w #$0,frameCounter ; Simple a:=b optimization 
+edblock557
 	cmp.w #$1,foamCounter
-	bls eblock460
-ctb459: ;Main true block ;keep 
-	jsr EffBeerDrink
+	bls eblock562
+ctb561: ;Main true block ;keep 
+	add.w #$1,frameCounter ; Optimization: simple A := A op Const ADD SUB OR AND
+	cmp.w #$18,frameCounter
+	bls localfailed591
+localsuccess592: ;keep
+	; ; logical AND, second requirement
+	cmp.w #$23,frameCounter
+	bhs localfailed591
+	jmp ctb587
+localfailed591: ;keep
+	; ; logical OR, second chance
+	cmp.w #$58,frameCounter
+	bls edblock589
+localsuccess593: ;keep
+	; ; logical AND, second requirement
+	cmp.w #$63,frameCounter
+	bhs edblock589
+ctb587: ;Main true block ;keep 
 	sub.w #$1,foamCounter ; Optimization: simple A := A op Const ADD SUB OR AND
 	add.w #$1,yOffset ; Optimization: simple A := A op Const ADD SUB OR AND
-	jmp edblock461
-eblock460
+edblock589
+	jsr EffBeerDrink
+	jmp edblock563
+eblock562
 	move.l #imageRestoreCup,rc_srcimage ; Simple a:=b optimization 
 	move.l screen,rc_dstimage ; Simple a:=b optimization 
 	move.w #$3d,rc_yoffset ; Simple a:=b optimization 
@@ -2116,36 +2166,110 @@ eblock460
 	move.w #$a2,d0
 	move.l d0,rc_height
 	jsr RestoreCup
-	cmp.w #$1c,musicPos
-	bne localfailed480
-	jmp ctb475
-localfailed480: ;keep
+	cmp.w #$20,musicPos
+	bne localfailed602
+	jmp ctb597
+localfailed602: ;keep
 	; ; logical OR, second chance
-	cmp.w #$30,musicPos
-	bne localfailed479
-	jmp ctb475
-localfailed479: ;keep
+	cmp.w #$34,musicPos
+	bne localfailed601
+	jmp ctb597
+localfailed601: ;keep
 	; ; logical OR, second chance
 	cmp.w #$4,musicPos
-	bne edblock477
-ctb475: ;Main true block ;keep 
+	bne localfailed604
+	jmp ctb597
+localfailed604: ;keep
+	; ; logical OR, second chance
+	cmp.w #$50,musicPos
+	bne localfailed603
+	jmp ctb597
+localfailed603: ;keep
+	; ; logical OR, second chance
+	cmp.w #$6c,musicPos
+	bne edblock599
+ctb597: ;Main true block ;keep 
 	move.w #$a,effectNumber ; Simple a:=b optimization 
-edblock477
-edblock461
+edblock599
+edblock563
 	jsr CopperEffects
-	jmp caseend365
-casenext456
+	jmp caseend452
+casenext552
+	move #$5b,d0
+	cmp.w effectNumber,d0
+	bne casenext606
+	move.w musicPosOld,d1          ; Loadvar regular end
+	move.w musicPos,d0
+	cmp.w d1,d0
+	bls edblock611
+ctb609: ;Main true block ;keep 
+	move.w musicPos,musicPosOld ; Simple a:=b optimization 
+	move.w #$0,frameCounter ; Simple a:=b optimization 
+edblock611
+	cmp.w #$1,foamCounter
+	bls eblock616
+ctb615: ;Main true block ;keep 
+	add.w #$1,frameCounter ; Optimization: simple A := A op Const ADD SUB OR AND
+	cmp.w #$18,frameCounter
+	bls edblock641
+localsuccess643: ;keep
+	; ; logical AND, second requirement
+	cmp.w #$2e,frameCounter
+	bhs edblock641
+ctb639: ;Main true block ;keep 
+	sub.w #$1,foamCounter ; Optimization: simple A := A op Const ADD SUB OR AND
+	add.w #$1,yOffset ; Optimization: simple A := A op Const ADD SUB OR AND
+edblock641
+	jsr EffBeerDrink
+	jmp edblock617
+eblock616
+	move.l #imageRestoreCup,rc_srcimage ; Simple a:=b optimization 
+	move.l screen,rc_dstimage ; Simple a:=b optimization 
+	move.w #$3d,rc_yoffset ; Simple a:=b optimization 
+	moveq #0,d0
+	move.w #$a2,d0
+	move.l d0,rc_height
+	jsr RestoreCup
+	cmp.w #$20,musicPos
+	bne localfailed652
+	jmp ctb647
+localfailed652: ;keep
+	; ; logical OR, second chance
+	cmp.w #$34,musicPos
+	bne localfailed651
+	jmp ctb647
+localfailed651: ;keep
+	; ; logical OR, second chance
+	cmp.w #$4,musicPos
+	bne localfailed654
+	jmp ctb647
+localfailed654: ;keep
+	; ; logical OR, second chance
+	cmp.w #$50,musicPos
+	bne localfailed653
+	jmp ctb647
+localfailed653: ;keep
+	; ; logical OR, second chance
+	cmp.w #$6c,musicPos
+	bne edblock649
+ctb647: ;Main true block ;keep 
+	move.w #$a,effectNumber ; Simple a:=b optimization 
+edblock649
+edblock617
+	jsr CopperEffects
+	jmp caseend452
+casenext606
 	move #$a,d0
 	cmp.w effectNumber,d0
-	bne casenext482
+	bne casenext656
 	add.w #$1,beerinput ; Optimization: simple A := A op Const ADD SUB OR AND
 	jsr DistortMore
 	move.w #$0,eff0Counter ; Simple a:=b optimization 
 	move.w #$4,effectNumber ; Simple a:=b optimization 
 	move.w #$97,foamCounter ; Simple a:=b optimization 
 	move.w #$1,yOffset ; Simple a:=b optimization 
-casenext482
-caseend365
+casenext656
+caseend452
 	jmp while236
 edblock239
 loopend241
