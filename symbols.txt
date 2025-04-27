@@ -2237,9 +2237,9 @@ F00:1046       ; // - BlitDmod
 F00:1047       ; // - BlitB + BlitCmod
 F00:1048       ; // - Channels and Minterm
 F00:1049       	move.l #imageFoam,srcimage ; Simple a:=b optimization 
-               S01:00000EC4:  23 FC 00 06 07 D4 00 00 01 E6 [R]
+               S01:00000EC4:  23 FC 00 06 0C 40 00 00 01 E6 [R]
 F00:1050       	move.l #imageMask,imagemask ; Simple a:=b optimization 
-               S01:00000ECE:  23 FC 00 06 0C 48 00 00 01 E2 [R]
+               S01:00000ECE:  23 FC 00 06 10 B4 00 00 01 E2 [R]
 F00:1051       	moveq #0,d0
                S01:00000ED8:  70 00
 F00:1052       	move.l imagemask,d0     ; BOP move
@@ -2811,7 +2811,7 @@ F00:1376       	bne eblock183
                S01:00001324:  66 36
 F00:1377       ctb182: ;Main true block ;keep 
 F00:1378       	move.l #image1,screen ; Simple a:=b optimization 
-               S01:00001326:  23 FC 00 02 78 A8 00 00 01 C8 [R]
+               S01:00001326:  23 FC 00 02 7D 14 00 00 01 C8 [R]
 F00:1379       	moveq #0,d0
                S01:00001330:  70 00
 F00:1380       	move.l screen,d0     ; BOP move
@@ -2822,7 +2822,7 @@ F00:1382       	; Store variable : screen
 F00:1383       	move.l d0,screen
                S01:0000133A:  23 C0 00 00 01 C8 [R]
 F00:1384       	move.l #image2,offscreen ; Simple a:=b optimization 
-               S01:00001340:  23 FC 00 04 2F B8 00 00 01 CC [R]
+               S01:00001340:  23 FC 00 04 34 24 00 00 01 CC [R]
 F00:1385       	moveq #0,d0
                S01:0000134A:  70 00
 F00:1386       	move.l offscreen,d0     ; BOP move
@@ -2836,7 +2836,7 @@ F00:1390       	jmp edblock184
                S01:0000135A:  60 34
 F00:1391       eblock183
 F00:1392       	move.l #image2,screen ; Simple a:=b optimization 
-               S01:0000135C:  23 FC 00 04 2F B8 00 00 01 C8 [R]
+               S01:0000135C:  23 FC 00 04 34 24 00 00 01 C8 [R]
 F00:1393       	moveq #0,d0
                S01:00001366:  70 00
 F00:1394       	move.l screen,d0     ; BOP move
@@ -2847,7 +2847,7 @@ F00:1396       	; Store variable : screen
 F00:1397       	move.l d0,screen
                S01:00001370:  23 C0 00 00 01 C8 [R]
 F00:1398       	move.l #image1,offscreen ; Simple a:=b optimization 
-               S01:00001376:  23 FC 00 02 78 A8 00 00 01 CC [R]
+               S01:00001376:  23 FC 00 02 7D 14 00 00 01 CC [R]
 F00:1399       	moveq #0,d0
                S01:00001380:  70 00
 F00:1400       	move.l offscreen,d0     ; BOP move
@@ -2992,7 +2992,7 @@ F00:1484       	move.w #$94,rf_yoffset ; Simple a:=b optimization
                S01:0000144A:  33 FC 00 94 00 00 14 3C [R]
 F00:1485       edblock193
 F00:1486       	move.l #imageRestoreCup,srcimage ; Simple a:=b optimization 
-               S01:00001452:  23 FC 00 02 52 B0 00 00 01 E6 [R]
+               S01:00001452:  23 FC 00 02 57 1C 00 00 01 E6 [R]
 F00:1487       waitforblitter196
 F00:1488       	btst	#14,DMACONR
                S01:0000145C:  08 39 00 0E 00 DF F0 02
@@ -3326,7 +3326,7 @@ F00:1667       	move.l screen,dstimage ; Simple a:=b optimization
 F00:1668       	move.w yOffset,yoffset ; Simple a:=b optimization 
                S01:000016EA:  33 FA E9 DA 00 00 10 A2 [R]
 F00:1669       	move.l #imageCupFull,fd_srcimage ; Simple a:=b optimization 
-               S01:000016F2:  23 FC 00 05 E6 C8 00 00 10 A4 [R]
+               S01:000016F2:  23 FC 00 05 EB 34 00 00 10 A4 [R]
 F00:1670       	moveq #0,d0
                S01:000016FC:  70 00
 F00:1671       	move.w #$69c,d0
@@ -3762,7 +3762,7 @@ F00:1915       	move.l d0,curcopperpos
 F00:1916       	move.l #music,cs_music ; Simple a:=b optimization 
                S01:00001A60:  23 FC 00 00 00 00 00 00 08 18 [R]
 F00:1917       	move.l #bank,cs_bank ; Simple a:=b optimization 
-               S01:00001A6A:  23 FC 00 01 E3 C4 00 00 08 1C [R]
+               S01:00001A6A:  23 FC 00 01 E8 14 00 00 08 1C [R]
 F00:1918       	move.w #$0,cs_vbr ; Simple a:=b optimization 
                S01:00001A74:  33 FC 00 00 00 00 08 20 [R]
 F00:1919       	move.w #$0,cs_palntsc ; Simple a:=b optimization 
@@ -3770,7 +3770,7 @@ F00:1919       	move.w #$0,cs_palntsc ; Simple a:=b optimization
 F00:1920       	jsr LSP_CIAStart
                S01:00001A84:  61 00 ED 9E
 F00:1921       	move.l #image1,Graphics_pa ; Simple a:=b optimization 
-               S01:00001A88:  23 FC 00 02 78 A8 00 00 00 90 [R]
+               S01:00001A88:  23 FC 00 02 7D 14 00 00 00 90 [R]
 F00:1922       	move.w #$5,Graphics_bpl ; Simple a:=b optimization 
                S01:00001A92:  33 FC 00 05 00 00 00 94 [R]
 F00:1923       	jsr Graphics_SetupNonInterlacedScreen
@@ -3944,7 +3944,7 @@ F00:2020       	bhs edblock503
                S01:00001BD6:  64 58
 F00:2021       ctb501: ;Main true block ;keep 
 F00:2022       	move.l #imageCupFull,rc_srcimage ; Simple a:=b optimization 
-               S01:00001BD8:  23 FC 00 05 E6 C8 00 00 17 FC [R]
+               S01:00001BD8:  23 FC 00 05 EB 34 00 00 17 FC [R]
 F00:2023       	move.l screen,rc_dstimage ; Simple a:=b optimization 
                S01:00001BE2:  23 FA E5 E4 00 00 18 00 [R]
 F00:2024       	move.w #$152,rc_yoffset ; Simple a:=b optimization 
@@ -4182,7 +4182,7 @@ F00:2160       	jmp edblock563
                S01:00001DB2:  60 6C
 F00:2161       eblock562
 F00:2162       	move.l #imageRestoreCup,rc_srcimage ; Simple a:=b optimization 
-               S01:00001DB4:  23 FC 00 02 52 B0 00 00 17 FC [R]
+               S01:00001DB4:  23 FC 00 02 57 1C 00 00 17 FC [R]
 F00:2163       	move.l screen,rc_dstimage ; Simple a:=b optimization 
                S01:00001DBE:  23 FA E4 08 00 00 18 00 [R]
 F00:2164       	move.w #$3d,rc_yoffset ; Simple a:=b optimization 
@@ -4290,7 +4290,7 @@ F00:2224       	jmp edblock617
                S01:00001E84:  60 6C
 F00:2225       eblock616
 F00:2226       	move.l #imageRestoreCup,rc_srcimage ; Simple a:=b optimization 
-               S01:00001E86:  23 FC 00 02 52 B0 00 00 17 FC [R]
+               S01:00001E86:  23 FC 00 02 57 1C 00 00 17 FC [R]
 F00:2227       	move.l screen,rc_dstimage ; Simple a:=b optimization 
                S01:00001E90:  23 FA E3 36 00 00 18 00 [R]
 F00:2228       	move.w #$3d,rc_yoffset ; Simple a:=b optimization 
@@ -4794,50 +4794,50 @@ F00:2502        	CNOP 0,4
 F00:2503       	 	CNOP 0,4
 F00:2504       music
 F00:2505       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/music/terra-mesta4.lsmusic"
-               S03:00000000:  4C 53 50 31 9F EB 52 EF 01 19 00 01 00 7D 00 49
-               S03:00000010:  00 4B 00 50 00 00 3A 00 00 30 00 00 63 8E 01 42
+               S03:00000000:  4C 53 50 31 E4 40 72 0E 01 19 00 01 00 7D 00 3C
+               S03:00000010:  00 49 00 4B 00 00 3A 00 00 30 00 00 63 AA 01 42
 F00:2506       	 	CNOP 0,4
 F00:2507       	 	CNOP 0,4
 F00:2508       bank
 F00:2509       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/music/terra-mesta4.lsbank"
-               S03:0001E3C4:  9F EB 52 EF 1A 31 44 AC 5E 64 67 68 67 64 60 5B
-               S03:0001E3D4:  55 4E 47 3F 36 2E 26 1F 17 10 0A 04 FD F7 F1 EB
+               S03:0001E814:  E4 40 72 0E 1A 31 44 AC 5E 64 67 68 67 64 60 5B
+               S03:0001E824:  55 4E 47 3F 36 2E 26 1F 17 10 0A 04 FD F7 F1 EB
 F00:2510       	 	CNOP 0,4
 F00:2511       	 	CNOP 0,4
 F00:2512       imageRestoreCup
 F00:2513       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/restorecup.BPL"
-               S03:000252B0:  00 28 00 00 00 00 00 00 00 00 02 80 00 2C 00 00
-               S03:000252C0:  00 00 00 00 00 00 03 40 00 38 00 00 00 00 00 00
+               S03:0002571C:  00 28 00 00 00 00 00 00 00 00 02 80 00 2C 00 00
+               S03:0002572C:  00 00 00 00 00 00 03 40 00 38 00 00 00 00 00 00
 F00:2514       	 	CNOP 0,4
 F00:2515       	 	CNOP 0,4
 F00:2516       image1
 F00:2517       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupempty.BPL"
-               S03:000278A8:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-               S03:000278B8:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+               S03:00027D14:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+               S03:00027D24:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 F00:2518       	 	CNOP 0,4
 F00:2519       	 	CNOP 0,4
 F00:2520       image2
 F00:2521       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupempty.BPL"
-               S03:00042FB8:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-               S03:00042FC8:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+               S03:00043424:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+               S03:00043434:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
 F00:2522       	 	CNOP 0,4
 F00:2523       	 	CNOP 0,4
 F00:2524       imageCupFull
 F00:2525       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupfull.BPL"
-               S03:0005E6C8:  00 5F E1 FC 00 00 00 3F FA 1F FF A0 00 3F F8 7F
-               S03:0005E6D8:  FF FF FF FF 00 7E 01 50 00 60 40 00 00 00 01 FF
+               S03:0005EB34:  00 5F E1 FC 00 00 00 3F FA 1F FF A0 00 3F F8 7F
+               S03:0005EB44:  FF FF FF FF 00 7E 01 50 00 60 40 00 00 00 01 FF
 F00:2526       	 	CNOP 0,4
 F00:2527       	 	CNOP 0,4
 F00:2528       imageFoam
 F00:2529       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/foam.BPL"
-               S03:000607D4:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-               S03:000607E4:  00 00 00 00 00 2C 00 00 00 00 00 00 00 00 00 00
+               S03:00060C40:  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+               S03:00060C50:  00 00 00 00 00 2C 00 00 00 00 00 00 00 00 00 00
 F00:2530       	 	CNOP 0,4
 F00:2531       	 	CNOP 0,4
 F00:2532       imageMask
 F00:2533       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/mask.BPL"
-               S03:00060C48:  00 00 00 00 00 00 00 00 00 74 00 00 00 00 00 00
-               S03:00060C58:  00 00 00 01 FF FF E0 00 00 00 01 FF 00 00 00 1F
+               S03:000610B4:  00 00 00 00 00 00 00 00 00 74 00 00 00 00 00 00
+               S03:000610C4:  00 00 00 01 FF FF E0 00 00 00 01 FF 00 00 00 1F
 F00:2534       	 	CNOP 0,4
 F00:2535       
 
@@ -4960,7 +4960,7 @@ loopstart240 LAB (0x1ab6) UNUSED sec=CODE
 while236 LAB (0x1ab6) sec=CODE 
 memcpy235 LAB (0x1ab0) sec=CODE 
 copper_palette LAB (0x68) REF sec=datachip 
-bank LAB (0x1e3c4) REF sec=ChipRAM 
+bank LAB (0x1e814) REF sec=ChipRAM 
 music LAB (0x0) REF sec=ChipRAM 
 Get_Musicpos LAB (0x1a4a) sec=CODE 
 waitforblitter233 LAB (0x19f4) sec=CODE 
@@ -4985,7 +4985,7 @@ ctb210 LAB (0x172c) UNUSED sec=CODE
 eblock211 LAB (0x1752) sec=CODE 
 ctb204 LAB (0x1716) UNUSED sec=CODE 
 edblock206 LAB (0x1722) sec=CODE 
-imageCupFull LAB (0x5e6c8) REF sec=ChipRAM 
+imageCupFull LAB (0x5eb34) REF sec=ChipRAM 
 EffBeerFill LAB (0x16e2) sec=CODE 
 EffBeerFoam LAB (0x16b6) sec=CODE 
 waitforblitter200 LAB (0x164c) sec=CODE 
@@ -4993,7 +4993,7 @@ waitforblitter199 LAB (0x15d0) sec=CODE
 waitforblitter198 LAB (0x1554) sec=CODE 
 waitforblitter197 LAB (0x14d8) sec=CODE 
 waitforblitter196 LAB (0x145c) sec=CODE 
-imageRestoreCup LAB (0x252b0) REF sec=ChipRAM 
+imageRestoreCup LAB (0x2571c) REF sec=ChipRAM 
 ctb191 LAB (0x144a) UNUSED sec=CODE 
 edblock193 LAB (0x1452) sec=CODE 
 RemoveFoam LAB (0x1440) sec=CODE 
@@ -5001,8 +5001,8 @@ rf_yoffset LAB (0x143c) REF sec=CODE
 rf_dstimage LAB (0x1438) REF sec=CODE 
 block189 LAB (0x1440) sec=CODE 
 edblock184 LAB (0x1390) sec=CODE 
-image2 LAB (0x42fb8) REF sec=ChipRAM 
-image1 LAB (0x278a8) REF sec=ChipRAM 
+image2 LAB (0x43424) REF sec=ChipRAM 
+image1 LAB (0x27d14) REF sec=ChipRAM 
 ctb182 LAB (0x1326) UNUSED sec=CODE 
 eblock183 LAB (0x135c) sec=CODE 
 FlipBuffers LAB (0x131e) sec=CODE 
@@ -5019,8 +5019,8 @@ yoffset LAB (0x10a2) REF sec=CODE
 dstimage LAB (0x109e) REF sec=CODE 
 block174 LAB (0x10ac) sec=CODE 
 waitforblitter173 LAB (0xf22) sec=CODE 
-imageMask LAB (0x60c48) REF sec=ChipRAM 
-imageFoam LAB (0x607d4) REF sec=ChipRAM 
+imageMask LAB (0x610b4) REF sec=ChipRAM 
+imageFoam LAB (0x60c40) REF sec=ChipRAM 
 BeerFoam LAB (0xec4) sec=CODE 
 foampos LAB (0xec0) REF sec=CODE 
 foamsize LAB (0xebe) REF sec=CODE 
