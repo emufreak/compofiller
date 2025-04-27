@@ -76,95 +76,95 @@ F00:0061       	move.l	$4,a6
 F00:0062       	move.l	#gfxname,a1
                S01:00000048:  43 FA 1F A2
 F00:0063       	moveq	#0,d0 ; whatever
-               S01:0000004C:  70 00
+               S01:0000004E:  70 00
 F00:0064       	jsr	-552(a6) 
-               S01:0000004E:  4E AE FD D8
+               S01:00000050:  4E AE FD D8
 F00:0065       	move.l	d0,gfxbase
                S01:00000052:  23 C0 00 00 1F D8 [R]
 F00:0066       	move.l 	d0,a6
-               S01:00000058:  2C 40
+               S01:0000005A:  2C 40
 F00:0067       	move.l 	34(a6),oldview
                S01:0000005A:  23 EE 00 22 00 00 1F D0 [R]
 F00:0068       	move.l 	38(a6),oldcopper
                S01:00000062:  23 EE 00 26 00 00 1F D4 [R]
 F00:0069       	move.l #0,a1
-               S01:0000006A:  93 C9
+               S01:0000006C:  93 C9
 F00:0070       	jsr -222(a6)	; LoadView
-               S01:0000006C:  4E AE FF 22
+               S01:0000006E:  4E AE FF 22
 F00:0071       	jsr -270(a6)	; WaitTOF
-               S01:00000070:  4E AE FE F2
+               S01:00000072:  4E AE FE F2
 F00:0072       	jsr -270(a6)	; WaitTOF
-               S01:00000074:  4E AE FE F2
+               S01:00000076:  4E AE FE F2
 F00:0073       	move.l	$4,a6
-               S01:00000078:  2C 78 00 04
+               S01:0000007A:  2C 78 00 04
 F00:0074       	jsr -132(a6)	; Forbid
-               S01:0000007C:  4E AE FF 7C
+               S01:0000007E:  4E AE FF 7C
 F00:0075               move.l #cop,a0
-               S01:00000080:  41 F9 00 00 00 00 [R]
+               S01:00000082:  41 F9 00 00 00 00 [R]
 F00:0076               move.l a0,COP1LCH
-               S01:00000086:  23 C8 00 DF F0 80
+               S01:00000088:  23 C8 00 DF F0 80
 F00:0077       	jmp block1
-               S01:0000008C:  60 00 19 C6
+               S01:0000008E:  4E F9 00 03 3C F8 [R]
 F00:0078       Graphics_pa dc.l 0
-               S01:00000090:  00 00 00 00
+               S01:00000094:  00 00 00 00
 F00:0079       Graphics_bpl	dc.w	0
-               S01:00000094:  00 00
+               S01:00000098:  00 00
 F00:0080       Graphics_j	dc.w	0
-               S01:00000096:  00 00
+               S01:0000009A:  00 00
 F00:0081       Graphics_bytefill1	dc.b $ff, $7f, $3f, $1f, $f, $7, $3, $1
-               S01:00000098:  FF
-               S01:00000099:  7F
-               S01:0000009A:  3F
-               S01:0000009B:  1F
-               S01:0000009C:  0F
-               S01:0000009D:  07
-               S01:0000009E:  03
-               S01:0000009F:  01
+               S01:0000009C:  FF
+               S01:0000009D:  7F
+               S01:0000009E:  3F
+               S01:0000009F:  1F
+               S01:000000A0:  0F
+               S01:000000A1:  07
+               S01:000000A2:  03
+               S01:000000A3:  01
 F00:0082       Graphics_bytefill2	dc.b $0, $80, $c0, $e0, $f0, $f8, $fc, $fe
-               S01:000000A0:  00
-               S01:000000A1:  80
-               S01:000000A2:  C0
-               S01:000000A3:  E0
-               S01:000000A4:  F0
-               S01:000000A5:  F8
-               S01:000000A6:  FC
-               S01:000000A7:  FE
+               S01:000000A4:  00
+               S01:000000A5:  80
+               S01:000000A6:  C0
+               S01:000000A7:  E0
+               S01:000000A8:  F0
+               S01:000000A9:  F8
+               S01:000000AA:  FC
+               S01:000000AB:  FE
 F00:0083       	dc.b $ff, $ff
-               S01:000000A8:  FF
-               S01:000000A9:  FF
+               S01:000000AC:  FF
+               S01:000000AD:  FF
 F00:0084       Graphics_bytefill3	dc.b $fe, $fc, $f8, $f0, $e0, $c0, $80, $0
-               S01:000000AA:  FE
-               S01:000000AB:  FC
-               S01:000000AC:  F8
-               S01:000000AD:  F0
-               S01:000000AE:  E0
-               S01:000000AF:  C0
-               S01:000000B0:  80
-               S01:000000B1:  00
-F00:0085       curBuf	dc.w	$00
-               S01:000000B2:  00 00
-F00:0086       isDone	dc.w	$00
-               S01:000000B4:  00 00
-F00:0087       colorcycled	dc.w	$00
-               S01:000000B6:  00 00
-F00:0088       curcopperpos	dc.l	$00
-               S01:000000B8:  00 00 00 00
-F00:0089       lightypos	dc.w	$3001
-               S01:000000BC:  30 01
-F00:0090       screenOffset	dc.l	$2800
-               S01:000000BE:  00 00 28 00
-F00:0091       foamCounter	dc.w	$00
-               S01:000000C2:  00 00
-F00:0092       eff0Counter	dc.w	$00
-               S01:000000C4:  00 00
-F00:0093       yOffset	dc.w	$8b
-               S01:000000C6:  00 8B
-F00:0094       	 	CNOP 0,4
-F00:0095       image_palette
-F00:0096       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupempty.COP"
-               S01:000000C8:  01 80 00 00 01 82 08 52 01 84 0C 73 01 86 0E B8
-               S01:000000D8:  01 88 0F DA 01 8A 0E DC 01 8C 0B A8 01 8E 0C 63
-F00:0097       	 	CNOP 0,4
+               S01:000000AE:  FE
+               S01:000000AF:  FC
+               S01:000000B0:  F8
+               S01:000000B1:  F0
+               S01:000000B2:  E0
+               S01:000000B3:  C0
+               S01:000000B4:  80
+               S01:000000B5:  00
+F00:0085       c2p1x1_5_c5_030_tempbuf	blk.b	 40960
+F00:0086       curBuf	dc.w	$00
+               S01:0000A0B6:  00 00
+F00:0087       isDone	dc.w	$00
+               S01:0000A0B8:  00 00
+F00:0088       colorcycled	dc.w	$00
+               S01:0000A0BA:  00 00
+F00:0089       curcopperpos	dc.l	$00
+               S01:0000A0BC:  00 00 00 00
+F00:0090       lightypos	dc.w	$3001
+               S01:0000A0C0:  30 01
+F00:0091       screenOffset	dc.l	$2800
+               S01:0000A0C2:  00 00 28 00
+F00:0092       foamCounter	dc.w	$00
+               S01:0000A0C6:  00 00
+F00:0093       eff0Counter	dc.w	$00
+               S01:0000A0C8:  00 00
+F00:0094       yOffset	dc.w	$8b
+               S01:0000A0CA:  00 8B
+F00:0095       	 	CNOP 0,4
+F00:0096       imagechunky
+F00:0097       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupempty.CHK"
+               S01:0000A0CC:  1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B
+               S01:0000A0DC:  1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B 1B
 F00:0098       	 	CNOP 0,4
 F00:0099       image_palette_cycled
 F00:0100       	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupemptycycle.COP"

@@ -1,7 +1,9 @@
 program Compofiller;
 @use "graphics"
 @include "lsplayer_cia.inc"
+@include "c2p.inc"
 var  
+	c2p1x1_5_c5_030_tempbuf : array[320*512/4] of byte;
 	music: incbin("resources/music/terra-mesta4.lsmusic") chipmem;
 	bank: incbin("resources/music/terra-mesta4.lsbank") chipmem;
    	curBuf, isDone, foamDone,colorcycled: integer = 0; 

@@ -82,6 +82,7 @@ Graphics_bytefill1	dc.b $ff, $7f, $3f, $1f, $f, $7, $3, $1
 Graphics_bytefill2	dc.b $0, $80, $c0, $e0, $f0, $f8, $fc, $fe
 	dc.b $ff, $ff
 Graphics_bytefill3	dc.b $fe, $fc, $f8, $f0, $e0, $c0, $80, $0
+c2p1x1_5_c5_030_tempbuf	blk.b	 40960
 curBuf	dc.w	$00
 isDone	dc.w	$00
 colorcycled	dc.w	$00
@@ -91,6 +92,10 @@ screenOffset	dc.l	$2800
 foamCounter	dc.w	$00
 eff0Counter	dc.w	$00
 yOffset	dc.w	$8b
+	 	CNOP 0,4
+imagechunky
+	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupempty.CHK"
+	 	CNOP 0,4
 	 	CNOP 0,4
 image_palette
 	incbin "C:/Users/uersu/Documents/GitData/compofiller///resources/images/cupempty.COP"
@@ -715,19 +720,306 @@ LSP_State:			ds.b	sizeof_LSPVars
 lspend:	
 	
 	rts
-	; ***********  Defining procedure : CookieCut
+	; ***********  Defining procedure : c2p_convert
 	;    Procedure type : User-defined procedure
 	jmp block34
+chunkybuffer	dc.l	0
+bplbuffer	dc.l	0
+	 	CNOP 0,4
+block34
+c2p_convert
+	
+	move.w  #1,$100
+	move.w	#CHUNKYXMAX,d0
+	move.w	#CHUNKYYMAX,d1
+	moveq	#0,d2			; Not used by this c2p
+	moveq	#0,d3			
+	move.l	#BPLX/8,d4		
+	move.l	#BPLSIZE,d5		; Only partially used by this c2p	
+	move.l	#CHUNKYXMAX,d6		; Not used by this c2p
+	bsr	    c2p1x1_5_c5_030_init	; Init c2p	
+	move.l  chunkybuffer,a0
+	move.l  bplbuffer,a1
+	bsr     c2p1x1_5_c5_030
+	
+	rts
+	; ***********  Defining procedure : Load_c2p
+	;    Procedure type : User-defined procedure
+Load_c2p
+BPLX	EQU	320
+BPLY	EQU	512
+BPLSIZE	EQU	BPLX*BPLY/8
+MINUBPLSIZEMINUS4 EQU -BPLSIZE-4
+BPLSIZEX2 EQU BPLSIZE*2
+BPLSIZEX3 EQU BPLSIZE*3
+CHUNKYXMAX EQU	BPLX
+CHUNKYYMAX EQU	BPLY
+    rts
+;				modulo	max res	fscreen	compu
+; c2p1x1_5_c5_030		no	320x256?  no	030
+; d0.w	chunkyx [chunky-pixels]
+; d1.w	chunkyy [chunky-pixels]
+; d2.w	(scroffsx) [screen-pixels]
+; d3.w	scroffsy [screen-pixels]
+; d4.w	(rowlen) [bytes] -- offset between one row and the next in a bpl
+; d5.l	(bplsize) [bytes] -- offset between one row in one bpl and the next bpl
+	XDEF	_c2p1x1_5_c5_030_init
+	XDEF	c2p1x1_5_c5_030_init
+_c2p1x1_5_c5_030_init
+c2p1x1_5_c5_030_init
+	movem.l	d2-d3,-(sp)
+	andi.l	#$ffff,d0
+	mulu.w	d0,d3
+	lsr.l	#3,d3
+	move.l	d3,c2p1x1_5_c5_030_scroffs
+	mulu.w	d0,d1
+	move.l	d1,c2p1x1_5_c5_030_pixels
+	movem.l	(sp)+,d2-d3
+	rts
+; a0	c2pscreen
+; a1	bitplanes
+	XDEF	_c2p1x1_5_c5_030
+	XDEF	c2p1x1_5_c5_030
+_c2p1x1_5_c5_030
+c2p1x1_5_c5_030
+	move.w  #1,$100
+	movem.l	d2-d7/a2-a6,-(sp)
+	move.l	#$33333333,a6
+	add.l	#BPLSIZE,a1
+	add.l	c2p1x1_5_c5_030_scroffs,a1
+	lea	c2p1x1_5_c5_030_tempbuf,a3
+	move.l	c2p1x1_5_c5_030_pixels,a2
+	add.l	a0,a2
+	cmp.l	a0,a2
+	beq	.none
+	move.l	a1,-(sp)
+	move.l	(a0)+,d1
+	move.l	(a0)+,d5
+	move.l	(a0)+,d0
+	move.l	(a0)+,d6
+	move.l	#$0f0f0f0f,d4		; Swap 4x1, part 1
+	move.l	d5,d7
+	lsr.l	#4,d7
+	eor.l	d1,d7
+	and.l	d4,d7
+	eor.l	d7,d1
+	lsl.l	#4,d7
+	eor.l	d7,d5
+	move.l	d6,d7
+	lsr.l	#4,d7
+	eor.l	d0,d7
+	and.l	d4,d7
+	eor.l	d7,d0
+	lsl.l	#4,d7
+	eor.l	d7,d6
+	move.l	(a0)+,d3
+	move.l	(a0)+,d2
+	move.l	d2,d7			; Swap 4x1, part 2
+	lsr.l	#4,d7
+	eor.l	d3,d7
+	and.l	d4,d7
+	eor.l	d7,d3
+	lsl.l	#4,d7
+	eor.l	d7,d2
+	move.w	d3,d7			; Swap 16x4, part 1
+	move.w	d1,d3
+	swap	d3
+	move.w	d3,d1
+	move.w	d7,d3
+	lsl.l	#2,d1			; Swap/Merge 2x4, part 1
+	or.l	d1,d3
+	move.l	d3,(a3)+
+	move.l	(a0)+,d1
+	move.l	(a0)+,d3
+	move.l	d3,d7
+	lsr.l	#4,d7
+	eor.l	d1,d7
+	and.l	d4,d7
+	eor.l	d7,d1
+	lsl.l	#4,d7
+	eor.l	d7,d3
+	move.w	d1,d7			; Swap 16x4, part 2
+	move.w	d0,d1
+	swap	d1
+	move.w	d1,d0
+	move.w	d7,d1
+	lsl.l	#2,d0			; Swap/Merge 2x4, part 2
+	or.l	d0,d1
+	move.l	d1,(a3)+
+	bra.s	.start1
+.x1
+	move.l	(a0)+,d1
+	move.l	(a0)+,d5
+	move.l	(a0)+,d0
+	move.l	(a0)+,d6
+	move.l	d7,BPLSIZE(a1)
+	move.l	#$0f0f0f0f,d4		; Swap 4x1, part 1
+	move.l	d5,d7
+	lsr.l	#4,d7
+	eor.l	d1,d7
+	and.l	d4,d7
+	eor.l	d7,d1
+	lsl.l	#4,d7
+	eor.l	d7,d5
+	move.l	d6,d7
+	lsr.l	#4,d7
+	eor.l	d0,d7
+	and.l	d4,d7
+	eor.l	d7,d0
+	lsl.l	#4,d7
+	eor.l	d7,d6
+	move.l	(a0)+,d3
+	move.l	(a0)+,d2
+	move.l	a4,(a1)+
+	move.l	d2,d7			; Swap 4x1, part 2
+	lsr.l	#4,d7
+	eor.l	d3,d7
+	and.l	d4,d7
+	eor.l	d7,d3
+	lsl.l	#4,d7
+	eor.l	d7,d2
+	move.w	d3,d7			; Swap 16x4, part 1
+	move.w	d1,d3
+	swap	d3
+	move.w	d3,d1
+	move.w	d7,d3
+	lsl.l 	#2,d1 			; Swap/Merge 2x4, part 1
+	or.l 	d1,d3
+	move.l 	d3,(a3)+
+	move.l	(a0)+,d1
+	move.l	(a0)+,d3
+	move.l	a5,MINUBPLSIZEMINUS4(a1)
+	move.l	d3,d7
+	lsr.l	#4,d7
+	eor.l	d1,d7
+	and.l	d4,d7
+	eor.l	d7,d1
+	lsl.l	#4,d7
+	eor.l	d7,d3
+	move.w	d1,d7			; Swap 16x4, part 2
+	move.w	d0,d1
+	swap	d1
+	move.w	d1,d0
+	move.w	d7,d1
+	lsl.l	#2,d0			; Swap/Merge 2x4, part 2
+	or.l	d0,d1
+	move.l	d1,(a3)+
+.start1
+	move.w	d2,d7			; Swap 16x4, part 3 & 4
+	move.w	d5,d2
+	swap	d2
+	move.w	d2,d5
+	move.w	d7,d2
+	move.w	d3,d7
+	move.w	d6,d3
+	swap	d3
+	move.w	d3,d6
+	move.w	d7,d3
+	move.l	a6,d0
+	move.l	d2,d7			; Swap/Merge 2x4, part 3 & 4
+	lsr.l	#2,d7
+	eor.l	d5,d7
+	and.l	d0,d7
+	eor.l	d7,d5
+	lsl.l	#2,d7
+	eor.l	d7,d2
+	move.l	d3,d7
+	lsr.l	#2,d7
+	eor.l	d6,d7
+	and.l	d0,d7
+	eor.l	d7,d6
+	lsl.l	#2,d7
+	eor.l	d7,d3
+	move.l	#$00ff00ff,d4
+	move.l	d6,d7			; Swap 8x2, part 1
+	lsr.l	#8,d7
+	eor.l	d5,d7
+	and.l	d4,d7
+	eor.l	d7,d5
+	lsl.l	#8,d7
+	eor.l	d7,d6
+	move.l	#$55555555,d1
+	move.l	d6,d7			; Swap 1x2, part 1
+	lsr.l	d7
+	eor.l	d5,d7
+	and.l	d1,d7
+	eor.l	d7,d5
+	move.l  a1,d0
+	add.l   #BPLSIZEX2, a1
+	move.l	d5,(a1)
+	move.l  d0,a1
+	add.l	d7,d7
+	eor.l	d6,d7
+	
+	move.l	d3,d5			; Swap 8x2, part 2
+	lsr.l	#8,d5
+	eor.l	d2,d5
+	and.l	d4,d5
+	eor.l	d5,d2
+	lsl.l	#8,d5
+	eor.l	d5,d3
+	move.l	d3,d5			; Swap 1x2, part 2
+	lsr.l	d5
+	eor.l	d2,d5
+	and.l	d1,d5
+	eor.l	d5,d2
+	add.l	d5,d5
+	eor.l	d5,d3
+	move.l	d2,a4
+	move.l	d3,a5
+	cmpa.l	a0,a2
+	bne	.x1
+.x1end
+	move.l	d7,BPLSIZE(a1)
+	move.l	a4,(a1)+
+	move.l	a5,MINUBPLSIZEMINUS4(a1)
+	move.l	(sp)+,a1
+	add.l	#BPLSIZEX3,a1
+	move.l	#$00ff00ff,d3
+	lea	c2p1x1_5_c5_030_tempbuf,a0
+	move.l	c2p1x1_5_c5_030_pixels,d0
+	lsr.l	#2,d0
+	lea	(a0,d0.l),a2
+	move.l	(a0)+,d0
+	move.l	(a0)+,d1
+	bra.s	.start2
+.x2
+	move.l	(a0)+,d0
+	move.l	(a0)+,d1
+	move.l	d2,(a1)+
+.start2
+	move.l	d1,d2			; Swap 8x2
+	lsr.l	#8,d2
+	eor.l	d0,d2
+	and.l	d3,d2
+	eor.l	d2,d0
+	lsl.l	#8,d2
+	eor.l	d1,d2
+	add.l	d0,d0			; Merge 1x2
+	add.l	d0,d2
+	cmpa.l	a0,a2
+	bne.s	.x2
+.x2end
+	move.l	d2,(a1)+
+.none
+	movem.l	(sp)+,d2-d7/a2-a6
+	rts
+c2p1x1_5_c5_030_scroffs ds.l 1
+c2p1x1_5_c5_030_pixels ds.l 1
+	rts
+	; ***********  Defining procedure : CookieCut
+	;    Procedure type : User-defined procedure
+	jmp block36
 cc_src	dc.l	0
 cc_dst	dc.l	0
 cc_mask	dc.l	0
 cc_size	dc.w	0
 	 	CNOP 0,4
-block34
+block36
 CookieCut
-waitforblitter35
+waitforblitter37
 	btst	#14,DMACONR
-	bne.s	waitforblitter35
+	bne.s	waitforblitter37
 	; Poke command
 	move.l #$DFF000,a0
 	add.w #$50,a0; cc_mask
@@ -844,9 +1136,9 @@ ColorCycle
 	move.w #$1f,d0
 	move.l #image_palette_cycled,a0
 	move.l curcopperpos,a1
-memcpy38
+memcpy40
 	move.l (a0)+,(a1)+
-	dbf d0,memcpy38
+	dbf d0,memcpy40
 	add.l #128,a5
 	
 	rts
@@ -859,9 +1151,9 @@ ColorCycleRestore
 	move.w #$1f,d0
 	move.l #image_palette,a1
 	move.l curcopperpos,a0
-memcpy40
+memcpy42
 	move.l (a1)+,(a0)+
-	dbf d0,memcpy40
+	dbf d0,memcpy42
 	add.l #128,a5
 	
 	rts
@@ -881,112 +1173,112 @@ CopperEffects
 		move.l #$ffdffffe,a3
 	
 	lea copper_custom,a5
-while42
-loopstart46
+while44
+loopstart48
 	move.w lightypos,d1          ; Loadvar regular end
 	move.w row,d0
 	cmp.w d1,d0
-	bhi edblock45
-ctb43: ;Main true block ;keep 
+	bhi edblock47
+ctb45: ;Main true block ;keep 
 	move.w row,(a5)+
 	move.w #$fffe,(a5)+
 	cmp.w #$0,beerinput
-	bls edblock59
-ctb57: ;Main true block ;keep 
+	bls edblock61
+ctb59: ;Main true block ;keep 
 	jsr DistortCopperLine
-edblock59
+edblock61
 	add.w #$100,row ; Optimization: simple A := A op Const ADD SUB OR AND
-	jmp while42
-edblock45
-loopend47
+	jmp while44
+edblock47
+loopend49
 	cmp.w #$6,effectNumber
-	bne edblock65
-ctb63: ;Main true block ;keep 
+	bne edblock67
+ctb65: ;Main true block ;keep 
 	move.w row,(a5)+
 	move.w #$fffe,(a5)+
 	cmp.w #$0,beerinput
-	bls edblock77
-ctb75: ;Main true block ;keep 
+	bls edblock79
+ctb77: ;Main true block ;keep 
 	jsr DistortCopperLine
-edblock77
+edblock79
 	jsr ColorCycle
 	add.w #$100,row ; Optimization: simple A := A op Const ADD SUB OR AND
-edblock65
-while80
-loopstart84
+edblock67
+while82
+loopstart86
 	; Swapped comparison expressions
 	moveq #0,d0
 	move.w lightypos,d0     ; BOP move
 	add.w #$1000,d0 ; simple bop
 	cmp.w row,d0
-	blo edblock83
-ctb81: ;Main true block ;keep 
+	blo edblock85
+ctb83: ;Main true block ;keep 
 	move.w row,(a5)+
 	move.w #$fffe,(a5)+
 	cmp.w #$0,beerinput
-	bls edblock97
-ctb95: ;Main true block ;keep 
+	bls edblock99
+ctb97: ;Main true block ;keep 
 	jsr DistortCopperLine
-edblock97
+edblock99
 	add.w #$100,row ; Optimization: simple A := A op Const ADD SUB OR AND
-	jmp while80
-edblock83
-loopend85
+	jmp while82
+edblock85
+loopend87
 	cmp.w #$6,effectNumber
-	bne edblock103
-ctb101: ;Main true block ;keep 
+	bne edblock105
+ctb103: ;Main true block ;keep 
 	move.w row,(a5)+
 	move.w #$fffe,(a5)+
 	jsr ColorCycleRestore
 	cmp.w #$0,beerinput
-	bls edblock115
-ctb113: ;Main true block ;keep 
+	bls edblock117
+ctb115: ;Main true block ;keep 
 	jsr DistortCopperLine
-edblock115
+edblock117
 	add.w #$100,row ; Optimization: simple A := A op Const ADD SUB OR AND
-edblock103
-while118
-loopstart122
+edblock105
+while120
+loopstart124
 	cmp.w #$2c01,row
-	blo edblock121
-ctb119: ;Main true block ;keep 
+	blo edblock123
+ctb121: ;Main true block ;keep 
 	move.w row,(a5)+
 	move.w #$fffe,(a5)+
 	cmp.w #$0,beerinput
-	bls edblock135
-ctb133: ;Main true block ;keep 
+	bls edblock137
+ctb135: ;Main true block ;keep 
 	jsr DistortCopperLine
-edblock135
+edblock137
 	add.w #$100,row ; Optimization: simple A := A op Const ADD SUB OR AND
-	jmp while118
-edblock121
-loopend123
-while138
-loopstart142
+	jmp while120
+edblock123
+loopend125
+while140
+loopstart144
 	cmp.w #$2c01,row
-	bhs edblock141
-ctb139: ;Main true block ;keep 
+	bhs edblock143
+ctb141: ;Main true block ;keep 
 	move.w row,(a5)+
 	move.w #$fffe,(a5)+
 	cmp.w #$0,beerinput
-	bls edblock155
-ctb153: ;Main true block ;keep 
+	bls edblock157
+ctb155: ;Main true block ;keep 
 	jsr DistortCopperLine
-edblock155
+edblock157
 	add.w #$100,row ; Optimization: simple A := A op Const ADD SUB OR AND
-	jmp while138
-edblock141
-loopend143
+	jmp while140
+edblock143
+loopend145
 	move.w #$ffff,(a5)+
 	move.w #$fffe,(a5)+
 	cmp.w #$ff,istart
-	bhs eblock160
-ctb159: ;Main true block ;keep 
+	bhs eblock162
+ctb161: ;Main true block ;keep 
 	add.w #$1,istart ; Optimization: simple A := A op Const ADD SUB OR AND
-	jmp edblock161
-eblock160
+	jmp edblock163
+eblock162
 	move.w #$0,istart ; Simple a:=b optimization 
-edblock161
+edblock163
 	rts
 	
 ; //Poke16(#$dff180,0,$000);			
@@ -994,7 +1286,7 @@ edblock161
 	;    Procedure type : User-defined procedure
 DistortMore
 	move.w #$0,i ; Simple a:=b optimization 
-forloop167
+forloop169
 	moveq #0,d0
 	move.l #0,d2
 	move.w i,d2          ; Loadvar regular end
@@ -1015,23 +1307,23 @@ forloop167
 	lsl #1,d2
 	lea sine4Copper,a0
 	move.w d0,(a0,d2)
-loopstart168
+loopstart170
 	; Create increasecounter
 	add.w #$1,i ; Optimization: simple A := A op Const ADD SUB OR AND
 	; end increasecounter
 	move #$ff,d0
 	cmp.w i,d0
-	bne forloop167
-loopend169
+	bne forloop169
+loopend171
 	rts
 	; ***********  Defining procedure : BeerFoam
 	;    Procedure type : User-defined procedure
-	jmp block172
+	jmp block174
 bf_dstimage	dc.l	0
 foamsize	dc.w	0
 foampos	dc.w	0
 	 	CNOP 0,4
-block172
+block174
 BeerFoam
 	
 ; //ablit description:	
@@ -1081,9 +1373,9 @@ BeerFoam
 	add.l d1,d0 ; simple bop
 	; Store variable : bf_dstimage
 	move.l d0,bf_dstimage
-waitforblitter173
+waitforblitter175
 	btst	#14,DMACONR
-	bne.s	waitforblitter173
+	bne.s	waitforblitter175
 	; Poke command
 	move.l #$DFF000,a0
 	add.w #$44,a0; #$FFFFFFFF
@@ -1164,13 +1456,13 @@ waitforblitter173
 	rts
 	; ***********  Defining procedure : FillDrinkBeer
 	;    Procedure type : User-defined procedure
-	jmp block174
+	jmp block176
 dstimage dc.l 0
 yoffset	dc.w	0
 fd_srcimage	dc.l	0
 fd_srcimageoffset	dc.l	0
 	 	CNOP 0,4
-block174
+block176
 FillDrinkBeer
 	
 ; //ablit description:	
@@ -1186,80 +1478,6 @@ FillDrinkBeer
 ; // - BlitB + BlitCmod
 ; // - Channels and Minterm
 ; //	fd_srcimage := #imageCupFull;
-waitforblitter175
-	btst	#14,DMACONR
-	bne.s	waitforblitter175
-	moveq.l #0,d6
-	lea     $dff000,a6 ; Hardware registers
-	move.l fd_srcimage,a0
-	move.l dstimage,a1
-	moveq #0,d0
-	move.w yoffset,d0     ; BOP move
-	; ORG TYPE of yoffset INTEGER
-	; LHS is byte, so initiate advanced op
-	; is advanced bop
-	; Reset register
-	moveq #0,d1
-	move.w #$c,d1     ; Advanced movee
-	mulu.w d1,d0
-	move.w d0,d6
-	move.w #$e,d1
-	moveq #0,d0
-	move.w yoffset,d0     ; BOP move
-	add.w #$52,d0 ; simple bop
-	move.w d0,d2
-	move.w #$28,d3
-	move.w #$86,d4
-	move.w #$0,BLTAMOD(a6)
-	move.w #$0,BLTBMOD(a6)
-	move.w #$0,BLTCMOD(a6)
-	move.w #$1c,BLTDMOD(a6)
-	move.w #$9f0,d0
-	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
-	jsr blitter
-	moveq #0,d0
-	move.l fd_srcimageoffset,d0     ; BOP move
-	add.l fd_srcimage,d0 ; simple bop
-	; Store variable : fd_srcimage
-	move.l d0,fd_srcimage
-	add.l #$57d0,dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
-waitforblitter176
-	btst	#14,DMACONR
-	bne.s	waitforblitter176
-	moveq.l #0,d6
-	lea     $dff000,a6 ; Hardware registers
-	move.l fd_srcimage,a0
-	move.l dstimage,a1
-	moveq #0,d0
-	move.w yoffset,d0     ; BOP move
-	; ORG TYPE of yoffset INTEGER
-	; LHS is byte, so initiate advanced op
-	; is advanced bop
-	; Reset register
-	moveq #0,d1
-	move.w #$c,d1     ; Advanced movee
-	mulu.w d1,d0
-	move.w d0,d6
-	move.w #$e,d1
-	moveq #0,d0
-	move.w yoffset,d0     ; BOP move
-	add.w #$52,d0 ; simple bop
-	move.w d0,d2
-	move.w #$28,d3
-	move.w #$86,d4
-	move.w #$0,BLTAMOD(a6)
-	move.w #$0,BLTBMOD(a6)
-	move.w #$0,BLTCMOD(a6)
-	move.w #$1c,BLTDMOD(a6)
-	move.w #$9f0,d0
-	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
-	jsr blitter
-	moveq #0,d0
-	move.l fd_srcimageoffset,d0     ; BOP move
-	add.l fd_srcimage,d0 ; simple bop
-	; Store variable : fd_srcimage
-	move.l d0,fd_srcimage
-	add.l #$57d0,dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
 waitforblitter177
 	btst	#14,DMACONR
 	bne.s	waitforblitter177
@@ -1365,6 +1583,80 @@ waitforblitter179
 	move.w #$9f0,d0
 	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
 	jsr blitter
+	moveq #0,d0
+	move.l fd_srcimageoffset,d0     ; BOP move
+	add.l fd_srcimage,d0 ; simple bop
+	; Store variable : fd_srcimage
+	move.l d0,fd_srcimage
+	add.l #$57d0,dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
+waitforblitter180
+	btst	#14,DMACONR
+	bne.s	waitforblitter180
+	moveq.l #0,d6
+	lea     $dff000,a6 ; Hardware registers
+	move.l fd_srcimage,a0
+	move.l dstimage,a1
+	moveq #0,d0
+	move.w yoffset,d0     ; BOP move
+	; ORG TYPE of yoffset INTEGER
+	; LHS is byte, so initiate advanced op
+	; is advanced bop
+	; Reset register
+	moveq #0,d1
+	move.w #$c,d1     ; Advanced movee
+	mulu.w d1,d0
+	move.w d0,d6
+	move.w #$e,d1
+	moveq #0,d0
+	move.w yoffset,d0     ; BOP move
+	add.w #$52,d0 ; simple bop
+	move.w d0,d2
+	move.w #$28,d3
+	move.w #$86,d4
+	move.w #$0,BLTAMOD(a6)
+	move.w #$0,BLTBMOD(a6)
+	move.w #$0,BLTCMOD(a6)
+	move.w #$1c,BLTDMOD(a6)
+	move.w #$9f0,d0
+	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
+	jsr blitter
+	moveq #0,d0
+	move.l fd_srcimageoffset,d0     ; BOP move
+	add.l fd_srcimage,d0 ; simple bop
+	; Store variable : fd_srcimage
+	move.l d0,fd_srcimage
+	add.l #$57d0,dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
+waitforblitter181
+	btst	#14,DMACONR
+	bne.s	waitforblitter181
+	moveq.l #0,d6
+	lea     $dff000,a6 ; Hardware registers
+	move.l fd_srcimage,a0
+	move.l dstimage,a1
+	moveq #0,d0
+	move.w yoffset,d0     ; BOP move
+	; ORG TYPE of yoffset INTEGER
+	; LHS is byte, so initiate advanced op
+	; is advanced bop
+	; Reset register
+	moveq #0,d1
+	move.w #$c,d1     ; Advanced movee
+	mulu.w d1,d0
+	move.w d0,d6
+	move.w #$e,d1
+	moveq #0,d0
+	move.w yoffset,d0     ; BOP move
+	add.w #$52,d0 ; simple bop
+	move.w d0,d2
+	move.w #$28,d3
+	move.w #$86,d4
+	move.w #$0,BLTAMOD(a6)
+	move.w #$0,BLTBMOD(a6)
+	move.w #$0,BLTCMOD(a6)
+	move.w #$1c,BLTDMOD(a6)
+	move.w #$9f0,d0
+	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
+	jsr blitter
 	rts
 	
 ; //	Flips rendering buffer and updates copper list & pointers
@@ -1373,8 +1665,8 @@ waitforblitter179
 	;    Procedure type : User-defined procedure
 FlipBuffers
 	cmp.w #$0,curBuf
-	bne eblock183
-ctb182: ;Main true block ;keep 
+	bne eblock185
+ctb184: ;Main true block ;keep 
 	move.l #image1,screen ; Simple a:=b optimization 
 	moveq #0,d0
 	move.l screen,d0     ; BOP move
@@ -1387,8 +1679,8 @@ ctb182: ;Main true block ;keep
 	add.l screenOffset,d0 ; simple bop
 	; Store variable : offscreen
 	move.l d0,offscreen
-	jmp edblock184
-eblock183
+	jmp edblock186
+eblock185
 	move.l #image2,screen ; Simple a:=b optimization 
 	moveq #0,d0
 	move.l screen,d0     ; BOP move
@@ -1401,7 +1693,7 @@ eblock183
 	add.l screenOffset,d0 ; simple bop
 	; Store variable : offscreen
 	move.l d0,offscreen
-edblock184
+edblock186
 	; setcopperlist32
 	move.l offscreen,a1
 	move.l a1,d0
@@ -1459,15 +1751,15 @@ edblock184
 	rts
 	; ***********  Defining procedure : RemoveFoam
 	;    Procedure type : User-defined procedure
-	jmp block189
+	jmp block191
 rf_dstimage dc.l 0
 rf_yoffset	dc.w	0
 	 	CNOP 0,4
-block189
+block191
 RemoveFoam
 	cmp.w #$94,rf_yoffset
-	bls edblock193
-ctb191: ;Main true block ;keep 
+	bls edblock195
+ctb193: ;Main true block ;keep 
 	
 ; //ablit description:	
 ; // - SrcImage 
@@ -1482,74 +1774,8 @@ ctb191: ;Main true block ;keep
 ; // - BlitB + BlitCmod
 ; // - Channels and Minterm
 	move.w #$94,rf_yoffset ; Simple a:=b optimization 
-edblock193
+edblock195
 	move.l #imageRestoreCup,srcimage ; Simple a:=b optimization 
-waitforblitter196
-	btst	#14,DMACONR
-	bne.s	waitforblitter196
-	moveq.l #0,d6
-	lea     $dff000,a6 ; Hardware registers
-	move.l srcimage,a0
-	move.l rf_dstimage,a1
-	moveq #0,d0
-	move.w rf_yoffset,d0     ; BOP move
-	; ORG TYPE of rf_yoffset INTEGER
-	; LHS is byte, so initiate advanced op
-	; is advanced bop
-	; Reset register
-	moveq #0,d1
-	move.w #$c,d1     ; Advanced movee
-	mulu.w d1,d0
-	move.w d0,d6
-	move.w #$e,d1
-	moveq #0,d0
-	move.w rf_yoffset,d0     ; BOP move
-	add.w #$3e,d0 ; simple bop
-	move.w d0,d2
-	move.w #$28,d3
-	move.w #$146,d4
-	move.w #$0,BLTAMOD(a6)
-	move.w #$0,BLTBMOD(a6)
-	move.w #$0,BLTCMOD(a6)
-	move.w #$1c,BLTDMOD(a6)
-	move.w #$9f0,d0
-	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
-	jsr blitter
-	add.l #$798,srcimage ; Optimization: simple A := A op Const ADD SUB OR AND
-	add.l #$57d0,rf_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
-waitforblitter197
-	btst	#14,DMACONR
-	bne.s	waitforblitter197
-	moveq.l #0,d6
-	lea     $dff000,a6 ; Hardware registers
-	move.l srcimage,a0
-	move.l rf_dstimage,a1
-	moveq #0,d0
-	move.w rf_yoffset,d0     ; BOP move
-	; ORG TYPE of rf_yoffset INTEGER
-	; LHS is byte, so initiate advanced op
-	; is advanced bop
-	; Reset register
-	moveq #0,d1
-	move.w #$c,d1     ; Advanced movee
-	mulu.w d1,d0
-	move.w d0,d6
-	move.w #$e,d1
-	moveq #0,d0
-	move.w rf_yoffset,d0     ; BOP move
-	add.w #$3e,d0 ; simple bop
-	move.w d0,d2
-	move.w #$28,d3
-	move.w #$146,d4
-	move.w #$0,BLTAMOD(a6)
-	move.w #$0,BLTBMOD(a6)
-	move.w #$0,BLTCMOD(a6)
-	move.w #$1c,BLTDMOD(a6)
-	move.w #$9f0,d0
-	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
-	jsr blitter
-	add.l #$798,srcimage ; Optimization: simple A := A op Const ADD SUB OR AND
-	add.l #$57d0,rf_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
 waitforblitter198
 	btst	#14,DMACONR
 	bne.s	waitforblitter198
@@ -1647,6 +1873,72 @@ waitforblitter200
 	move.w #$9f0,d0
 	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
 	jsr blitter
+	add.l #$798,srcimage ; Optimization: simple A := A op Const ADD SUB OR AND
+	add.l #$57d0,rf_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
+waitforblitter201
+	btst	#14,DMACONR
+	bne.s	waitforblitter201
+	moveq.l #0,d6
+	lea     $dff000,a6 ; Hardware registers
+	move.l srcimage,a0
+	move.l rf_dstimage,a1
+	moveq #0,d0
+	move.w rf_yoffset,d0     ; BOP move
+	; ORG TYPE of rf_yoffset INTEGER
+	; LHS is byte, so initiate advanced op
+	; is advanced bop
+	; Reset register
+	moveq #0,d1
+	move.w #$c,d1     ; Advanced movee
+	mulu.w d1,d0
+	move.w d0,d6
+	move.w #$e,d1
+	moveq #0,d0
+	move.w rf_yoffset,d0     ; BOP move
+	add.w #$3e,d0 ; simple bop
+	move.w d0,d2
+	move.w #$28,d3
+	move.w #$146,d4
+	move.w #$0,BLTAMOD(a6)
+	move.w #$0,BLTBMOD(a6)
+	move.w #$0,BLTCMOD(a6)
+	move.w #$1c,BLTDMOD(a6)
+	move.w #$9f0,d0
+	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
+	jsr blitter
+	add.l #$798,srcimage ; Optimization: simple A := A op Const ADD SUB OR AND
+	add.l #$57d0,rf_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
+waitforblitter202
+	btst	#14,DMACONR
+	bne.s	waitforblitter202
+	moveq.l #0,d6
+	lea     $dff000,a6 ; Hardware registers
+	move.l srcimage,a0
+	move.l rf_dstimage,a1
+	moveq #0,d0
+	move.w rf_yoffset,d0     ; BOP move
+	; ORG TYPE of rf_yoffset INTEGER
+	; LHS is byte, so initiate advanced op
+	; is advanced bop
+	; Reset register
+	moveq #0,d1
+	move.w #$c,d1     ; Advanced movee
+	mulu.w d1,d0
+	move.w d0,d6
+	move.w #$e,d1
+	moveq #0,d0
+	move.w rf_yoffset,d0     ; BOP move
+	add.w #$3e,d0 ; simple bop
+	move.w d0,d2
+	move.w #$28,d3
+	move.w #$146,d4
+	move.w #$0,BLTAMOD(a6)
+	move.w #$0,BLTBMOD(a6)
+	move.w #$0,BLTCMOD(a6)
+	move.w #$1c,BLTDMOD(a6)
+	move.w #$9f0,d0
+	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
+	jsr blitter
 	rts
 	; ***********  Defining procedure : EffBeerFoam
 	;    Procedure type : User-defined procedure
@@ -1672,14 +1964,14 @@ EffBeerFill
 	move.l d0,fd_srcimageoffset
 	jsr FillDrinkBeer
 	cmp.w #$1,yOffset
-	blo edblock206
-ctb204: ;Main true block ;keep 
+	blo edblock208
+ctb206: ;Main true block ;keep 
 	sub.w #$1,yOffset ; Optimization: simple A := A op Const ADD SUB OR AND
 	add.w #$1,foamCounter ; Optimization: simple A := A op Const ADD SUB OR AND
-edblock206
+edblock208
 	cmp.w #$13,foamCounter
-	bhi eblock211
-ctb210: ;Main true block ;keep 
+	bhi eblock213
+ctb212: ;Main true block ;keep 
 	move.l screen,bf_dstimage ; Simple a:=b optimization 
 	move.w foamCounter,foamsize ; Simple a:=b optimization 
 	moveq #0,d0
@@ -1688,8 +1980,8 @@ ctb210: ;Main true block ;keep
 	; Store variable : foampos
 	move.w d0,foampos
 	jsr BeerFoam
-	jmp edblock212
-eblock211
+	jmp edblock214
+eblock213
 	move.l screen,bf_dstimage ; Simple a:=b optimization 
 	move.w #$13,foamsize ; Simple a:=b optimization 
 	moveq #0,d0
@@ -1698,7 +1990,7 @@ eblock211
 	; Store variable : foampos
 	move.w d0,foampos
 	jsr BeerFoam
-edblock212
+edblock214
 	rts
 	; ***********  Defining procedure : EffBeerDrink
 	;    Procedure type : User-defined procedure
@@ -1707,8 +1999,8 @@ EffBeerDrink
 	move.w yOffset,rf_yoffset ; Simple a:=b optimization 
 	jsr RemoveFoam
 	cmp.w #$13,foamCounter
-	bhi eblock220
-ctb219: ;Main true block ;keep 
+	bhi eblock222
+ctb221: ;Main true block ;keep 
 	move.l screen,bf_dstimage ; Simple a:=b optimization 
 	move.w foamCounter,foamsize ; Simple a:=b optimization 
 	moveq #0,d0
@@ -1717,8 +2009,8 @@ ctb219: ;Main true block ;keep
 	; Store variable : foampos
 	move.w d0,foampos
 	jsr BeerFoam
-	jmp edblock221
-eblock220
+	jmp edblock223
+eblock222
 	move.l screen,bf_dstimage ; Simple a:=b optimization 
 	move.w #$13,foamsize ; Simple a:=b optimization 
 	moveq #0,d0
@@ -1727,7 +2019,7 @@ eblock220
 	; Store variable : foampos
 	move.w d0,foampos
 	jsr BeerFoam
-edblock221
+edblock223
 	rts
 	; ***********  Defining procedure : EffScrollup
 	;    Procedure type : User-defined procedure
@@ -1741,13 +2033,13 @@ EffScrolldown
 	rts
 	; ***********  Defining procedure : RestoreCup
 	;    Procedure type : User-defined procedure
-	jmp block228
+	jmp block230
 rc_srcimage	dc.l	0
 rc_dstimage	dc.l	0
 rc_yoffset	dc.w	0
 rc_height	dc.l	0
 	 	CNOP 0,4
-block228
+block230
 RestoreCup
 	
 ; //ablit description:	
@@ -1782,56 +2074,6 @@ RestoreCup
 	add.l #$6,d0 ; simple bop
 	; Store variable : bltsize
 	move.w d0,bltsize
-waitforblitter229
-	btst	#14,DMACONR
-	bne.s	waitforblitter229
-	moveq.l #0,d6
-	lea     $dff000,a6 ; Hardware registers
-	move.l srcimage,a0
-	move.l rc_dstimage,a1
-	move.w #$0,d6
-	move.w #$e,d1
-	move.w rc_yoffset,d2
-	move.w #$28,d3
-	move.w bltsize,d4
-	move.w #$0,BLTAMOD(a6)
-	move.w #$0,BLTBMOD(a6)
-	move.w #$0,BLTCMOD(a6)
-	move.w #$1c,BLTDMOD(a6)
-	move.w #$9f0,d0
-	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
-	jsr blitter
-	moveq #0,d0
-	move.l planeoffset,d0     ; BOP move
-	add.l srcimage,d0 ; simple bop
-	; Store variable : srcimage
-	move.l d0,srcimage
-	add.l #$57d0,rc_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
-waitforblitter230
-	btst	#14,DMACONR
-	bne.s	waitforblitter230
-	moveq.l #0,d6
-	lea     $dff000,a6 ; Hardware registers
-	move.l srcimage,a0
-	move.l rc_dstimage,a1
-	move.w #$0,d6
-	move.w #$e,d1
-	move.w rc_yoffset,d2
-	move.w #$28,d3
-	move.w bltsize,d4
-	move.w #$0,BLTAMOD(a6)
-	move.w #$0,BLTBMOD(a6)
-	move.w #$0,BLTCMOD(a6)
-	move.w #$1c,BLTDMOD(a6)
-	move.w #$9f0,d0
-	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
-	jsr blitter
-	moveq #0,d0
-	move.l planeoffset,d0     ; BOP move
-	add.l srcimage,d0 ; simple bop
-	; Store variable : srcimage
-	move.l d0,srcimage
-	add.l #$57d0,rc_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
 waitforblitter231
 	btst	#14,DMACONR
 	bne.s	waitforblitter231
@@ -1901,6 +2143,56 @@ waitforblitter233
 	move.w #$9f0,d0
 	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
 	jsr blitter
+	moveq #0,d0
+	move.l planeoffset,d0     ; BOP move
+	add.l srcimage,d0 ; simple bop
+	; Store variable : srcimage
+	move.l d0,srcimage
+	add.l #$57d0,rc_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
+waitforblitter234
+	btst	#14,DMACONR
+	bne.s	waitforblitter234
+	moveq.l #0,d6
+	lea     $dff000,a6 ; Hardware registers
+	move.l srcimage,a0
+	move.l rc_dstimage,a1
+	move.w #$0,d6
+	move.w #$e,d1
+	move.w rc_yoffset,d2
+	move.w #$28,d3
+	move.w bltsize,d4
+	move.w #$0,BLTAMOD(a6)
+	move.w #$0,BLTBMOD(a6)
+	move.w #$0,BLTCMOD(a6)
+	move.w #$1c,BLTDMOD(a6)
+	move.w #$9f0,d0
+	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
+	jsr blitter
+	moveq #0,d0
+	move.l planeoffset,d0     ; BOP move
+	add.l srcimage,d0 ; simple bop
+	; Store variable : srcimage
+	move.l d0,srcimage
+	add.l #$57d0,rc_dstimage ; Optimization: simple A := A op Const ADD SUB OR AND
+waitforblitter235
+	btst	#14,DMACONR
+	bne.s	waitforblitter235
+	moveq.l #0,d6
+	lea     $dff000,a6 ; Hardware registers
+	move.l srcimage,a0
+	move.l rc_dstimage,a1
+	move.w #$0,d6
+	move.w #$e,d1
+	move.w rc_yoffset,d2
+	move.w #$28,d3
+	move.w bltsize,d4
+	move.w #$0,BLTAMOD(a6)
+	move.w #$0,BLTBMOD(a6)
+	move.w #$0,BLTCMOD(a6)
+	move.w #$1c,BLTDMOD(a6)
+	move.w #$9f0,d0
+	move.w  #0,BLTCON1(a6) ;    issa 0   BLTCON1
+	jsr blitter
 	rts
 	; ***********  Defining procedure : Get_Musicpos
 	;    Procedure type : User-defined procedure
@@ -1918,6 +2210,10 @@ block1
 	move.w #$0,cs_vbr ; Simple a:=b optimization 
 	move.w #$0,cs_palntsc ; Simple a:=b optimization 
 	jsr LSP_CIAStart
+	jsr Load_c2p
+	move.l #imagechunky,chunkybuffer ; Simple a:=b optimization 
+	move.l #image1,bplbuffer ; Simple a:=b optimization 
+	jsr c2p_convert
 	move.l #image1,Graphics_pa ; Simple a:=b optimization 
 	move.w #$5,Graphics_bpl ; Simple a:=b optimization 
 	jsr Graphics_SetupNonInterlacedScreen
@@ -1925,11 +2221,11 @@ block1
 	move.w #$1f,d0
 	move.l #image_palette,a0
 	move.l #copper_palette,a1
-memcpy235
+memcpy237
 	move.l (a0)+,(a1)+
-	dbf d0,memcpy235
-while236
-loopstart240
+	dbf d0,memcpy237
+while238
+loopstart242
 	cmp.w #$0,isDone
 	bne edblock239
 ctb237: ;Main true block ;keep 
